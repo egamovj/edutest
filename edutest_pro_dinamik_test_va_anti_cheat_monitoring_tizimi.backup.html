@@ -1,0 +1,2783 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduTest Pro — Dinamik Test va Anti-Cheat Monitoring Tizimi</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      user-select: none;
+    }
+    .option-card {
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .option-card:hover {
+      transform: translateY(-1px);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade {
+      animation: fadeIn 0.2s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 selection:bg-indigo-600 selection:text-white">
+
+  <!-- Top Header with Route Bar (hidden automatically during active FullScreen exam) -->
+  <header id="mainAppHeader" class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200 shadow-2xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold text-lg tracking-tight text-slate-900">EduTest<span class="text-indigo-600">Pro</span></span>
+            <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Proctoring v3.0</span>
+          </div>
+          <p class="text-xs text-slate-500 hidden sm:block">Full-Screen Anti-Cheat Test Tizimi</p>
+        </div>
+      </div>
+
+      <!-- URL Route Navigator (Allows typing /admin or #/admin directly, as well as browser URL hash) -->
+      <form onsubmit="handleRouteBarSubmit(event)" class="flex items-center gap-2 flex-1 max-w-xs sm:max-w-sm ml-auto">
+        <div class="relative flex-1">
+          <span class="absolute left-3 top-2 text-xs font-mono text-slate-400">route:</span>
+          <input
+            type="text"
+            id="routePathInput"
+            value="/login"
+            placeholder="/login yoki /admin"
+            aria-label="Route manzili"
+            class="w-full pl-14 pr-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/70 focus:bg-white border border-slate-200 focus:border-indigo-600 text-xs font-mono text-slate-800 outline-none transition"
+          />
+        </div>
+        <button type="submit" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition">
+          O'tish
+        </button>
+      </form>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main id="mainAppContainer" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ==================== STUDENT PORTAL ==================== -->
+    <div id="studentPortal" class="space-y-6">
+
+      <!-- STEP 1: STUDENT LOGIN VIEW -->
+      <section id="studentLoginView" class="max-w-lg mx-auto mt-4 animate-fade">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 px-6 py-6 text-white">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-medium backdrop-blur-sm mb-3 border border-white/15">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Full-Screen &amp; Anti-Cheat himoyasi faol
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight">Test tizimiga kirish</h1>
+            <p class="text-slate-300 text-xs sm:text-sm mt-1">Ism-familiya, login va parolingizni kiriting. Test boshlanganda ekran to'liq rejimga (Full Screen) o'tadi.</p>
+          </div>
+
+          <!-- Warning if no questions exist yet -->
+          <div id="emptyBankAlertBox" class="hidden mx-6 mt-5 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs leading-relaxed">
+            <div class="font-bold text-sm mb-1 flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span>Savollar bazasi hozircha bo'sh!</span>
+            </div>
+            O'qituvchi (Admin) hali savollar kiritmagan. Savol qo'shish uchun yuqoridagi route qatoriga <code class="px-1.5 py-0.5 bg-amber-100 rounded font-mono font-bold">/admin</code> deb yozib, Admin panel orqali savollarni kiriting.
+          </div>
+
+          <form id="studentLoginForm" onsubmit="startStudentExam(event)" class="p-6 space-y-4">
+            <div>
+              <label for="studentNameInput" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Ism va familiya <span class="text-rose-500">*</span></label>
+              <div class="relative">
+                <input type="text" id="studentNameInput" required placeholder="Ism va familiyangizni kiriting" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none text-slate-900 text-sm transition" />
+                <svg class="w-5 h-5 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label for="studentLoginInput" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Login <span class="text-rose-500">*</span></label>
+                <div class="relative">
+                  <input type="text" id="studentLoginInput" oninput="autoFillRegisteredStudentName()" required placeholder="Login kiriting" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none font-mono text-slate-900 text-sm transition" />
+                  <svg class="w-5 h-5 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                  </svg>
+                </div>
+              </div>
+
+              <div>
+                <label for="studentPasswordInput" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Parol <span class="text-rose-500">*</span></label>
+                <div class="relative">
+                  <input type="password" id="studentPasswordInput" required placeholder="••••••••" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none font-mono text-slate-900 text-sm transition" />
+                  <svg class="w-5 h-5 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label for="studentSubjectSelect" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Test fani / yo'nalishi</label>
+              <select id="studentSubjectSelect" onchange="updateExamPreviewInfo()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none text-slate-900 text-sm bg-white transition">
+                <option value="ALL">Barcha fanlar</option>
+              </select>
+            </div>
+
+            <!-- Exam Rules Summary Box -->
+            <div class="grid grid-cols-3 gap-2.5 pt-1">
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center">
+                <div class="text-[11px] text-slate-500 font-medium">Savollar soni</div>
+                <div id="previewQuestionCount" class="text-base font-extrabold text-slate-900 mt-0.5">0 ta</div>
+              </div>
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center">
+                <div class="text-[11px] text-slate-500 font-medium">Ajratilgan vaqt</div>
+                <div id="previewTimeLimit" class="text-base font-extrabold text-slate-900 mt-0.5">15 daqiqa</div>
+              </div>
+              <div class="bg-rose-50/70 border border-rose-200 rounded-xl p-2.5 text-center">
+                <div class="text-[11px] text-rose-700 font-medium">Ogohlantirish limiti</div>
+                <div class="text-xs font-extrabold text-rose-900 mt-1">2 ta (3-sida chetlatish)</div>
+              </div>
+            </div>
+
+            <!-- Strict Anti-Cheat Notice -->
+            <div class="p-3.5 rounded-xl bg-rose-50/80 border border-rose-200 text-xs text-rose-900 space-y-1">
+              <div class="font-bold flex items-center gap-1.5 text-rose-700">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>Qat'iy imtihon qoidalari:</span>
+              </div>
+              <p class="text-rose-800 leading-relaxed">
+                1. Test boshlanganda ekran <strong>Full Screen (To'liq ekran)</strong> rejimiga o'tadi.<br/>
+                2. Boshqa oynaga, tabga yoki ekranga o'tsangiz <strong>2 marotaba ogohlantirilasiz</strong>.<br/>
+                3. <strong>3-marotaba</strong> boshqa oynaga o'tsangiz, test <strong>avtomatik kelgan joyida yakunlanadi</strong> va tizimdan chiqarilasiz.
+              </p>
+            </div>
+
+            <button type="submit" id="startExamSubmitBtn" class="w-full py-3 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-sm shadow-md shadow-indigo-600/20 transition flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+              </svg>
+              <span>Full Screen rejimda testni boshlash</span>
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- STEP 2: ACTIVE EXAM VIEW (LOCKED FULL-VIEWPORT, ZERO SCROLL) -->
+      <section id="studentExamView" class="hidden fixed inset-0 z-40 w-screen h-screen overflow-hidden bg-slate-100 flex flex-col select-none">
+        <!-- Top Compact Status Bar (Fixed height, never scrolls) -->
+        <div class="h-16 shrink-0 bg-white border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center text-xs shrink-0" id="activeStudentInitials">ST</div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <h2 class="font-bold text-slate-900 text-sm truncate" id="activeStudentName">O'quvchi</h2>
+                <span class="px-2 py-0.5 text-[11px] font-mono bg-slate-100 text-slate-700 rounded border border-slate-200 shrink-0" id="activeStudentLogin">login</span>
+              </div>
+              <p class="text-[11px] text-slate-500 truncate" id="activeExamSubjectLabel">Yo'nalish</p>
+            </div>
+          </div>
+
+          <!-- Center Anti-Cheat Status Pill -->
+          <div class="flex items-center gap-2">
+            <div id="violationStatusBadge" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>Ogohlantirish: <span id="violationCounterText" class="font-mono">0 / 2</span></span>
+            </div>
+
+            <button type="button" id="reEnterFullscreenBtn" onclick="enterFullScreen()" class="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition" title="To'liq ekran rejimini tiklash">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+              </svg>
+              <span>Full Screen</span>
+            </button>
+          </div>
+
+          <!-- Right Progress & Timer & Submit -->
+          <div class="flex items-center gap-3">
+            <div class="hidden md:block text-right">
+              <div class="text-[11px] text-slate-500 font-medium">Belgilandi</div>
+              <div class="text-xs font-bold text-slate-900 font-mono"><span id="answeredCountText">0</span> / <span id="totalCountText">0</span></div>
+            </div>
+
+            <div id="timerBadge" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 text-white font-mono text-xs sm:text-sm font-semibold">
+              <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span id="examTimerDisplay">15:00</span>
+            </div>
+
+            <button type="button" onclick="openFinishConfirmModal()" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold transition">
+              Yakunlash
+            </button>
+          </div>
+        </div>
+
+        <!-- Main Non-Scrolling Exam Workspace (100% remaining viewport height) -->
+        <div class="flex-1 min-h-0 max-w-7xl w-full mx-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-4 overflow-hidden">
+
+          <!-- Question & Options Area (8 cols on desktop, full height flex column) -->
+          <div class="lg:col-span-8 bg-white rounded-2xl shadow-2xs border border-slate-200 p-4 sm:p-6 flex flex-col justify-between h-full min-h-0 overflow-hidden">
+            <!-- Top Question Meta -->
+            <div class="flex items-center justify-between gap-2 pb-3 border-b border-slate-100 shrink-0">
+              <div class="flex items-center gap-2">
+                <span class="px-3 py-1 rounded-lg bg-indigo-600 text-white text-xs font-bold tracking-wide uppercase" id="currentQuestionNumberBadge">1-savol</span>
+                <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-semibold" id="currentQuestionSubjectBadge">Fan</span>
+              </div>
+              <span class="text-[11px] text-slate-400 font-medium hidden sm:inline">Natijalar faqat test yakunida ko'rsatiladi</span>
+            </div>
+
+            <!-- Middle Question Text + Options (Flex-1 centered so no scroll needed) -->
+            <div class="flex-1 min-h-0 flex flex-col justify-center py-2 overflow-hidden">
+              <div class="mb-4">
+                <h3 id="currentQuestionText" class="text-sm sm:text-base md:text-lg font-bold text-slate-900 leading-snug line-clamp-4">
+                  Savol matni...
+                </h3>
+              </div>
+
+              <div id="optionsContainer" class="grid grid-cols-1 gap-2.5">
+                <!-- Populated dynamically via JS -->
+              </div>
+            </div>
+
+            <!-- Bottom Navigation Bar inside Question Card -->
+            <div class="flex items-center justify-between gap-2 pt-3 border-t border-slate-100 shrink-0">
+              <button type="button" id="prevQuestionBtn" onclick="navigateQuestion(-1)" class="px-3.5 py-2 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 disabled:opacity-40 disabled:pointer-events-none">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                <span>Oldingi savol</span>
+              </button>
+
+              <button type="button" id="clearAnswerBtn" onclick="clearCurrentAnswer()" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition">
+                Tanlovni tozalash
+              </button>
+
+              <button type="button" id="nextQuestionBtn" onclick="navigateQuestion(1)" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold transition flex items-center gap-1.5">
+                <span>Keyingi savol</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Question Navigator Palette (4 cols on desktop, full height flex column) -->
+          <div class="hidden lg:flex lg:col-span-4 bg-white rounded-2xl shadow-2xs border border-slate-200 p-5 flex-col justify-between h-full min-h-0 overflow-hidden">
+            <div class="min-h-0 flex flex-col">
+              <div class="flex items-center justify-between mb-3 shrink-0">
+                <h4 class="font-bold text-slate-800 text-sm">Savollar xaritasi</h4>
+                <span class="text-[11px] text-indigo-600 font-semibold bg-indigo-50 px-2 py-0.5 rounded-md">Random rejim</span>
+              </div>
+
+              <div id="questionPaletteGrid" class="grid grid-cols-5 gap-1.5 content-start overflow-y-auto custom-scrollbar py-1 pr-1 flex-1 min-h-0">
+                <!-- Question buttons 1..N -->
+              </div>
+            </div>
+
+            <div class="space-y-3 pt-3 border-t border-slate-100 shrink-0">
+              <div class="grid grid-cols-3 gap-1.5 text-[11px] text-slate-600">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-3 h-3 rounded bg-indigo-600 inline-block shrink-0"></span>
+                  <span>Belgilangan</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="w-3 h-3 rounded border-2 border-indigo-600 bg-indigo-50 inline-block shrink-0"></span>
+                  <span>Joriy savol</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="w-3 h-3 rounded bg-slate-100 border border-slate-300 inline-block shrink-0"></span>
+                  <span>Bo'sh</span>
+                </div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 leading-normal">
+                <strong>Diqqat:</strong> Boshqa oynaga o'tish qat'iyan man etiladi. 3-marotaba qoidabuzarlik aniqlansa test avtomatik yakunlanadi.
+              </div>
+
+              <button type="button" onclick="openFinishConfirmModal()" class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm transition shadow-xs flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Testni yakunlash va topshirish</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- STEP 3: EXAM RESULT VIEW (SHOWN ONLY AT THE END) -->
+      <section id="studentResultView" class="hidden max-w-4xl mx-auto animate-fade">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div id="resultHeaderBanner" class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 sm:p-8 text-white">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <span id="resultStatusPill" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 mb-2">
+                  Test yakunlandi
+                </span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold" id="resultStudentName">--</h2>
+                <p class="text-slate-300 text-sm mt-1">Login: <span id="resultStudentLogin" class="font-mono text-white">--</span> • Topshirilgan vaqt: <span id="resultTimestamp">--</span></p>
+                <p class="text-xs text-amber-300 mt-1 font-medium" id="resultTerminationReasonText"></p>
+              </div>
+              <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 text-center border border-white/15 min-w-[140px]">
+                <div class="text-xs uppercase tracking-wider text-indigo-200 font-semibold">Yakuniy natija</div>
+                <div class="text-3xl font-extrabold mt-1" id="resultPercentageBadge">0%</div>
+                <div class="text-xs font-semibold mt-1 text-emerald-300" id="resultGradeLabel">--</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4 Key Metric Cards -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-6 bg-slate-50 border-b border-slate-200">
+            <div class="bg-white p-4 rounded-xl border border-slate-200">
+              <div class="text-xs text-slate-500 font-medium">To'g'ri javoblar</div>
+              <div class="text-xl font-extrabold text-emerald-600 mt-1" id="resultCorrectCount">0 / 0</div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200">
+              <div class="text-xs text-slate-500 font-medium">Noto'g'ri / Bo'sh</div>
+              <div class="text-xl font-extrabold text-rose-600 mt-1" id="resultWrongCount">0 ta</div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200">
+              <div class="text-xs text-slate-500 font-medium">Sarflangan vaqt</div>
+              <div class="text-xl font-extrabold text-indigo-600 font-mono mt-1" id="resultDurationText">00:00</div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200">
+              <div class="text-xs text-slate-500 font-medium">Ogohlantirishlar</div>
+              <div class="text-xl font-extrabold text-slate-800 font-mono mt-1" id="resultAvgTimeText">0 / 3</div>
+            </div>
+          </div>
+
+          <!-- Detailed Question Review -->
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-slate-900 text-base">Yakuniy tahlil</h3>
+              <button type="button" onclick="resetToStudentLogin()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold transition flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14" />
+                </svg>
+                <span>Kirish oynasiga qaytish</span>
+              </button>
+            </div>
+
+            <div id="resultReviewList" class="space-y-3">
+              <!-- Populated after submission -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ==================== ADMIN PORTAL (ACCESSED VIA ROUTE /admin) ==================== -->
+    <div id="adminPortal" class="hidden space-y-6 animate-fade">
+
+      <!-- Admin Auth Gate -->
+      <section id="adminAuthGate" class="max-w-md mx-auto mt-6 bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <div>
+              <h2 class="font-bold text-slate-900 text-lg">Admin Boshqaruv Paneli</h2>
+              <p class="text-xs text-slate-500">Route: <code class="font-mono text-indigo-600">#/admin</code></p>
+            </div>
+          </div>
+          <button type="button" onclick="navigateToRoute('/login')" class="text-xs font-semibold text-slate-500 hover:text-slate-900">
+            ← O'quvchi oynasi
+          </button>
+        </div>
+
+        <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+          <div>
+            <label for="adminPassInput" class="block text-xs font-semibold text-slate-700 uppercase mb-1">Admin Parol</label>
+            <input type="password" id="adminPassInput" required placeholder="Admin parolini kiriting..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-600 outline-none font-mono text-sm" />
+            <p class="text-xs text-slate-500 mt-1.5" id="adminAuthHintText">Tizimga birinchi marta kirayotgan bo'lsangiz, shu yerga yozgan parolingiz Admin paroli sifatida saqlanadi.</p>
+          </div>
+          <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold transition">
+            Admin panelga kirish
+          </button>
+        </form>
+      </section>
+
+      <!-- Admin Main Dashboard Content -->
+      <section id="adminDashboardContent" class="hidden space-y-6">
+        <!-- Admin Top Sub-navigation -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-4">
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" id="adminTabResults" onclick="switchAdminTab('results')" class="px-4 py-2 rounded-xl text-sm font-semibold bg-indigo-600 text-white transition">
+              Natijalar Monitoringi (<span id="adminTotalSubmissionsBadge">0</span>)
+            </button>
+            <button type="button" id="adminTabQuestions" onclick="switchAdminTab('questions')" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">
+              Savollar Bazasi (<span id="adminTotalQuestionsBadge">0</span>)
+            </button>
+            <button type="button" id="adminTabStudents" onclick="switchAdminTab('students')" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">
+              O'quvchilar Login/Paroli (<span id="adminTotalStudentsBadge">0</span>)
+            </button>
+            <button type="button" id="adminTabSettings" onclick="switchAdminTab('settings')" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">
+              Sozlamalar
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="exportResultsCSV()" class="px-3.5 py-2 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold transition flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span>CSV / Excel yuklab olish</span>
+            </button>
+            <button type="button" onclick="navigateToRoute('/login')" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs sm:text-sm font-semibold transition">
+              Test oynasiga o'tish
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB 1: STUDENT RESULTS & ANALYTICS -->
+        <div id="adminResultsSection" class="space-y-6">
+          <!-- KPI Summary Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Jami topshirganlar</span>
+                <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </span>
+              </div>
+              <div class="text-2xl font-extrabold text-slate-900 mt-2" id="kpiTotalStudents">0 nafar</div>
+              <div class="text-xs text-slate-500 mt-1">Dinamik ravishda yangilanadi</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">O'rtacha ko'rsatkich</span>
+                <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </span>
+              </div>
+              <div class="text-2xl font-extrabold text-emerald-600 mt-2" id="kpiAvgScore">0%</div>
+              <div class="text-xs text-slate-500 mt-1" id="kpiAvgCorrectSub">To'g'ri javoblar nisbati</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">O'rtacha sarflangan vaqt</span>
+                <span class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </span>
+              </div>
+              <div class="text-2xl font-extrabold text-slate-900 font-mono mt-2" id="kpiAvgDuration">00:00</div>
+              <div class="text-xs text-slate-500 mt-1">Daqiqa va soniya hisobida</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Eng yuqori natija</span>
+                <span class="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                  </svg>
+                </span>
+              </div>
+              <div class="text-lg font-extrabold text-slate-900 mt-2 truncate" id="kpiTopStudent">--</div>
+              <div class="text-xs text-violet-600 font-semibold mt-1" id="kpiTopScoreSub">Hali test topshirilmagan</div>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-7 bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <h3 class="font-bold text-slate-800 text-sm">O'quvchilar natijalari va sarflagan vaqti (daqiqada)</h3>
+                  <p class="text-xs text-slate-500">Real vaqtda topshirilgan testlar bo'yicha dinamik grafik</p>
+                </div>
+              </div>
+              <div class="relative h-64">
+                <canvas id="adminPerformanceChart"></canvas>
+              </div>
+            </div>
+
+            <div class="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
+              <div class="mb-4">
+                <h3 class="font-bold text-slate-800 text-sm">Baholar taqsimoti</h3>
+                <p class="text-xs text-slate-500">Foiz ko'rsatkichlari bo'yicha guruhlash</p>
+              </div>
+              <div class="relative h-64">
+                <canvas id="adminGradeDistributionChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detailed Student Submissions Table -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+            <div class="p-5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h3 class="font-bold text-slate-900 text-base">O'quvchilar qaydnomasi (Kim, nechta ishladi, necha daqiqada, Anti-Cheat holati)</h3>
+                <p class="text-xs text-slate-500">Har bir o'quvchining javoblarini birma-bir ko'rish uchun "Batafsil" tugmasini bosing</p>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2.5">
+                <input type="text" id="adminSearchInput" oninput="renderAdminSubmissionsTable()" placeholder="Ism yoki login bo'yicha qidiruv..." class="px-3.5 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm outline-none focus:border-indigo-600" />
+                <select id="adminSortSelect" onchange="renderAdminSubmissionsTable()" class="px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm bg-white outline-none focus:border-indigo-600">
+                  <option value="newest">Eng yangilari</option>
+                  <option value="score_desc">Yuqori ball bo'yicha</option>
+                  <option value="duration_asc">Eng tez ishlaganlar</option>
+                  <option value="duration_desc">Eng ko'p vaqt sarflaganlar</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto custom-scrollbar">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    <th class="py-3.5 px-4">#</th>
+                    <th class="py-3.5 px-4">O'quvchi (Ism va Login)</th>
+                    <th class="py-3.5 px-4">Fan</th>
+                    <th class="py-3.5 px-4">Ishlangan / Jami</th>
+                    <th class="py-3.5 px-4">To'g'ri javob</th>
+                    <th class="py-3.5 px-4">Sarflangan vaqt</th>
+                    <th class="py-3.5 px-4">Anti-Cheat / Holat</th>
+                    <th class="py-3.5 px-4">Sana</th>
+                    <th class="py-3.5 px-4 text-right">Amallar</th>
+                  </tr>
+                </thead>
+                <tbody id="adminSubmissionsTableBody" class="divide-y divide-slate-200 text-sm">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: QUESTION BANK MANAGER -->
+        <div id="adminQuestionsSection" class="hidden space-y-6">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <!-- Add New Question Form -->
+            <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-4">
+              <div>
+                <h3 class="font-bold text-slate-900 text-base mb-0.5">Yangi savol qo'shish</h3>
+                <p class="text-xs text-slate-500">Qo'shilgan savol o'quvchilarga tasodifiy tartibda va tasodifiy variantlar bilan tushadi.</p>
+              </div>
+
+              <form id="addQuestionForm" onsubmit="handleSaveQuestion(event)" class="space-y-3.5">
+                <div>
+                  <label for="qSubjectInput" class="block text-xs font-semibold text-slate-700 mb-1">Fan / Yo'nalish nomi <span class="text-rose-500">*</span></label>
+                  <input type="text" id="qSubjectInput" required placeholder="Masalan: Matematika, Tarix, Ingliz tili..." class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white outline-none focus:border-indigo-600" />
+                </div>
+
+                <div>
+                  <label for="qTextInput" class="block text-xs font-semibold text-slate-700 mb-1">Savol matni <span class="text-rose-500">*</span></label>
+                  <textarea id="qTextInput" rows="3" required placeholder="Savol matnini yozing..." class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm outline-none focus:border-indigo-600"></textarea>
+                </div>
+
+                <div class="space-y-2">
+                  <label class="block text-xs font-semibold text-slate-700">Javob variantlari (To'g'ri javob qarshisidagi nuqtani belgilang)</label>
+
+                  <div class="flex items-center gap-2">
+                    <input type="radio" name="correctOptionRadio" value="0" checked class="w-4 h-4 text-indigo-600" />
+                    <input type="text" id="qOpt0" required placeholder="1-variant (To'g'ri javob)" class="flex-1 px-3 py-1.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-indigo-600" />
+                  </div>
+
+                  <div class="flex items-center gap-2">
+                    <input type="radio" name="correctOptionRadio" value="1" class="w-4 h-4 text-indigo-600" />
+                    <input type="text" id="qOpt1" required placeholder="2-variant" class="flex-1 px-3 py-1.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-indigo-600" />
+                  </div>
+
+                  <div class="flex items-center gap-2">
+                    <input type="radio" name="correctOptionRadio" value="2" class="w-4 h-4 text-indigo-600" />
+                    <input type="text" id="qOpt2" required placeholder="3-variant" class="flex-1 px-3 py-1.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-indigo-600" />
+                  </div>
+
+                  <div class="flex items-center gap-2">
+                    <input type="radio" name="correctOptionRadio" value="3" class="w-4 h-4 text-indigo-600" />
+                    <input type="text" id="qOpt3" required placeholder="4-variant" class="flex-1 px-3 py-1.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-indigo-600" />
+                  </div>
+                </div>
+
+                <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition">
+                  Bazaga savolni qo'shish
+                </button>
+              </form>
+            </div>
+
+            <!-- Existing Question Bank List -->
+            <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs">
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                <div>
+                  <h3 class="font-bold text-slate-900 text-base">Mavjud savollar bazasi</h3>
+                  <p class="text-xs text-slate-500">Dinamik savollar ro'yxati</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <select id="adminFilterQuestionSubject" onchange="renderAdminQuestionsList()" class="px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-semibold bg-white">
+                    <option value="ALL">Barcha fanlar</option>
+                  </select>
+                  <button type="button" onclick="clearAllQuestions()" class="px-3 py-1.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-semibold transition">
+                    Bazani tozalash
+                  </button>
+                </div>
+              </div>
+
+              <div id="adminQuestionsListContainer" class="space-y-3 max-h-[540px] overflow-y-auto custom-scrollbar pr-1">
+                <!-- Populated via JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: REGISTERED STUDENT ACCOUNTS (LOGIN & PASSWORD MANAGEMENT) -->
+        <div id="adminStudentsSection" class="hidden space-y-6">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-4">
+              <div>
+                <h3 class="font-bold text-slate-900 text-base">O'quvchi Login va Parolini Yaratish</h3>
+                <p class="text-xs text-slate-500">O'quvchilarga individual login va parol biriktirish</p>
+              </div>
+
+              <form id="addStudentAccountForm" onsubmit="handleSaveStudentAccount(event)" class="space-y-3.5">
+                <div>
+                  <label for="regStudentName" class="block text-xs font-semibold text-slate-700 mb-1">O'quvchi Ism-familiyasi <span class="text-rose-500">*</span></label>
+                  <input type="text" id="regStudentName" required placeholder="Masalan: Jasurbek Toshmatov" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm outline-none focus:border-indigo-600" />
+                </div>
+
+                <div>
+                  <label for="regStudentLogin" class="block text-xs font-semibold text-slate-700 mb-1">Login <span class="text-rose-500">*</span></label>
+                  <input type="text" id="regStudentLogin" required placeholder="Masalan: jasur01" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-mono outline-none focus:border-indigo-600" />
+                </div>
+
+                <div>
+                  <label for="regStudentPassword" class="block text-xs font-semibold text-slate-700 mb-1">Parol <span class="text-rose-500">*</span></label>
+                  <input type="text" id="regStudentPassword" required placeholder="Masalan: p9042" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-mono outline-none focus:border-indigo-600" />
+                </div>
+
+                <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition">
+                  O'quvchi akkauntini saqlash
+                </button>
+              </form>
+            </div>
+
+            <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <h3 class="font-bold text-slate-900 text-base">Ro'yxatga olingan o'quvchilar</h3>
+                  <p class="text-xs text-slate-500">Agar ro'yxat bo'sh bo'lsa, har qanday o'quvchi o'z ism, login va parolini yozib kirishi mumkin</p>
+                </div>
+              </div>
+
+              <div id="adminStudentAccountsContainer" class="space-y-2.5 max-h-[500px] overflow-y-auto custom-scrollbar">
+                <!-- Populated via JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: EXAM SETTINGS -->
+        <div id="adminSettingsSection" class="hidden max-w-2xl mx-auto">
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs space-y-5">
+            <div>
+              <h3 class="font-bold text-slate-900 text-lg">Test va Anti-Cheat Sozlamalari</h3>
+              <p class="text-xs text-slate-500">Imtihon vaqti, savollar soni va xavfsizlik qoidalari</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label for="settingTimeMinutes" class="block text-sm font-semibold text-slate-700 mb-1">Test vaqti (daqiqada)</label>
+                <input type="number" id="settingTimeMinutes" min="1" max="180" value="15" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm font-mono" />
+              </div>
+
+              <div>
+                <label for="settingQuestionsPerExam" class="block text-sm font-semibold text-slate-700 mb-1">Har bir o'quvchiga tushadigan savollar soni</label>
+                <input type="number" id="settingQuestionsPerExam" min="1" max="100" value="10" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm font-mono" />
+              </div>
+            </div>
+
+            <div class="space-y-3 pt-2">
+              <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer">
+                <div>
+                  <div class="text-sm font-semibold text-slate-800">Savollar ketma-ketligini random qilish</div>
+                  <div class="text-xs text-slate-500">Har bir o'quvchiga savollar har xil tartibda tushadi</div>
+                </div>
+                <input type="checkbox" id="settingShuffleQuestions" checked class="w-5 h-5 text-indigo-600 rounded" />
+              </label>
+
+              <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer">
+                <div>
+                  <div class="text-sm font-semibold text-slate-800">Variantlar (A, B, C, D) o'rnini ham random qilish</div>
+                  <div class="text-xs text-slate-500">Bir xil savolning javob variantlari ham o'rin almashadi</div>
+                </div>
+                <input type="checkbox" id="settingShuffleOptions" checked class="w-5 h-5 text-indigo-600 rounded" />
+              </label>
+
+              <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer">
+                <div>
+                  <div class="text-sm font-semibold text-slate-800">Yakuniy tahlilda to'g'ri javoblarni ko'rsatish</div>
+                  <div class="text-xs text-slate-500">Faqat test to'liq yakunlangandan keyin xatolarni ko'rsatish</div>
+                </div>
+                <input type="checkbox" id="settingShowReviewAtEnd" checked class="w-5 h-5 text-indigo-600 rounded" />
+              </label>
+
+              <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer">
+                <div>
+                  <div class="text-sm font-semibold text-slate-800">Faqat Admin qo'shgan Login/Parollarga ruxsat berish</div>
+                  <div class="text-xs text-slate-500">Yoqilsa, ro'yxatda yo'q login/parollar testga kira olmaydi</div>
+                </div>
+                <input type="checkbox" id="settingStrictStudentAuth" class="w-5 h-5 text-indigo-600 rounded" />
+              </label>
+            </div>
+
+            <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+              <button type="button" onclick="resetDemoData()" class="px-4 py-2 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-semibold transition">
+                Barcha ma'lumotlarni tozalash (Reset)
+              </button>
+              <button type="button" onclick="saveExamSettings()" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition">
+                Sozlamalarni saqlash
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- ==================== MODALS & TOASTS ==================== -->
+
+  <!-- ANTI-CHEAT TAB/SCREEN SWITCH WARNING MODAL (1st and 2nd warning) -->
+  <div id="antiCheatWarningModal" class="fixed inset-0 z-50 hidden bg-rose-950/80 backdrop-blur-sm flex items-center justify-center p-4 select-none">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border-2 border-rose-500 animate-fade text-center">
+      <div class="w-16 h-16 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+      <span id="antiCheatWarningBadge" class="inline-block px-3 py-1 rounded-full bg-rose-100 text-rose-800 text-xs font-extrabold uppercase tracking-wider mb-2">
+        Ogohlantirish: 1 / 2
+      </span>
+      <h3 id="antiCheatWarningTitle" class="text-xl font-extrabold text-slate-900">Boshqa oynaga o'tish aniqlandi!</h3>
+      <p id="antiCheatWarningText" class="text-sm text-slate-600 mt-2 leading-relaxed">
+        Siz test oynasidan chiqdingiz yoki boshqa ekranga o'tdingiz. Bu harakat qoidabuzarlik sifatida yozib olindi. 3-marotaba takrorlansa, testingiz avtomatik ravishda kelgan joyida yakunlanadi va testdan chetlatilasiz!
+      </p>
+
+      <button type="button" onclick="acknowledgeAntiCheatWarning()" class="w-full mt-6 py-3 px-5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-lg shadow-rose-600/25 transition">
+        Tushundim, Full Screen rejimda davom etish
+      </button>
+    </div>
+  </div>
+
+  <!-- Finish Exam Confirmation Modal -->
+  <div id="finishConfirmModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 animate-fade">
+      <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mb-4">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+      <h3 class="text-lg font-bold text-slate-900">Testni yakunlashni tasdiqlaysizmi?</h3>
+      <p id="finishModalSummaryText" class="text-sm text-slate-600 mt-1.5">Test yakunlangach natijangiz hisoblanadi va adminga yuboriladi.</p>
+
+      <div class="flex items-center justify-end gap-3 mt-6">
+        <button type="button" onclick="closeFinishConfirmModal()" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 text-sm font-semibold hover:bg-slate-50">
+          Testga qaytish
+        </button>
+        <button type="button" onclick="submitStudentExam('O\'quvchi o\'z xohishi bilan yakunladi', false)" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold">
+          Ha, yakunlash
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Student Detail Inspection Modal -->
+  <div id="studentDetailModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[88vh] flex flex-col shadow-xl border border-slate-200 animate-fade overflow-hidden">
+      <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <div>
+          <h3 class="font-bold text-base" id="modalDetailStudentTitle">O'quvchi natijasi</h3>
+          <p class="text-xs text-slate-300" id="modalDetailStudentSub">--</p>
+        </div>
+        <button type="button" onclick="closeStudentDetailModal()" class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div id="modalDetailBody" class="p-6 overflow-y-auto custom-scrollbar space-y-3 flex-1">
+        <!-- Populated via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 hidden">
+    <div class="bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg border border-slate-700 flex items-center gap-2.5 text-sm font-medium">
+      <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+      <span id="toastMessage">Amal bajarildi</span>
+    </div>
+  </div>
+
+  <script>
+    // ==================== PURE DYNAMIC STORAGE KEYS (ZERO STATIC DEMO DATA) ====================
+    const STORAGE_KEY_QUESTIONS = 'edutest_ict_questions_50_v4';
+    const STORAGE_KEY_SUBMISSIONS = 'edutest_dynamic_submissions_v3';
+    const STORAGE_KEY_STUDENTS = 'edutest_dynamic_students_v3';
+    const STORAGE_KEY_SETTINGS = 'edutest_ict_settings_50_v4';
+    const STORAGE_KEY_ADMIN_PASS = 'edutest_dynamic_admin_pass_v3';
+
+    const INITIAL_50_QUESTIONS = [
+      {
+            "id": "kt_01",
+            "subject": "1. Kompyuter arxitekturasi",
+            "text": "Zamonaviy kompyuterlarning klassik arxitekturasi (dastur va ma’lumotlarni yagona xotirada saqlash tamoyili) qaysi olim nomi bilan bog‘liq?",
+            "options": [
+                  "Jon fon Neyman",
+                  "Alan Tyuring",
+                  "Charlz Bebbidj",
+                  "Klod Shennon"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_02",
+            "subject": "1. Kompyuter arxitekturasi",
+            "text": "Markaziy protsessor (CPU) tarkibidagi barcha arifmetik va mantiqiy amallarni bevosita bajaruvchi qism qanday ataladi?",
+            "options": [
+                  "Arifmetik-mantiqiy qurilma (ALU)",
+                  "Boshqaruv qurilmasi (Control Unit)",
+                  "Doimiy xotira (ROM)",
+                  "Tashqi shina (Bus)"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_03",
+            "subject": "1. Kompyuter arxitekturasi",
+            "text": "Kompyuter elektr manbaidan uzilganda ichidagi barcha ma’lumotlar o‘chib ketadigan energiyaga bog‘liq tezkor xotira qaysi?",
+            "options": [
+                  "RAM (Operativ xotira)",
+                  "ROM (Doimiy xotira)",
+                  "SSD xotira",
+                  "Flash xotira"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_04",
+            "subject": "1. Kompyuter arxitekturasi",
+            "text": "Markaziy protsessor va operativ xotira o‘rtasida ma’lumot almashish tezligini oshiruvchi o‘ta tezkor oraliq xotira nima deb ataladi?",
+            "options": [
+                  "Kesh-xotira (Cache memory)",
+                  "Virtual xotira",
+                  "Registr patnis",
+                  "Optik xotira"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_05",
+            "subject": "1. Kompyuter arxitekturasi",
+            "text": "Kompyuter yoqilganda qurilmalarni dastlabki tekshiruvdan (POST) o‘tkazuvchi va operatsion tizimni yuklashni boshlab beruvchi dastur qayerda joylashgan?",
+            "options": [
+                  "BIOS / UEFI mikrosxemasida (ROM)",
+                  "Foydalanuvchining Ish stolida",
+                  "Faqat qattiq diskning oxirgi sektorida",
+                  "Videokarta sovutkichida"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_06",
+            "subject": "2. Operatsion tizim va Windows",
+            "text": "Quyida keltirilgan dasturlardan qaysi biri operatsion tizim hisoblanmaydi?",
+            "options": [
+                  "Microsoft Excel",
+                  "Windows 11",
+                  "Ubuntu Linux",
+                  "macOS Sonoma"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_07",
+            "subject": "2. Operatsion tizim va Windows",
+            "text": "Windows muhitida barcha ochiq oynalarni bir zumda pastga yig‘ib, Ish stolini (Desktop) ko‘rsatish uchun qaysi tugmalar birikmasi bosiladi?",
+            "options": [
+                  "Win + D",
+                  "Alt + Tab",
+                  "Ctrl + Alt + P",
+                  "Win + R"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_08",
+            "subject": "2. Operatsion tizim va Windows",
+            "text": "Windows operatsion tizimida ishlayotgan jarayonlarni ko‘rish va qotib qolgan dasturni majburiy to‘xtatish oynasi (Task Manager) qaysi tugmalar orqali to‘g‘ridan-to‘g‘ri ochiladi?",
+            "options": [
+                  "Ctrl + Shift + Esc",
+                  "Ctrl + Alt + N",
+                  "Win + E",
+                  "Alt + F1"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_09",
+            "subject": "2. Operatsion tizim va Windows",
+            "text": "Windows muhitida ochiq turgan joriy dastur oynasini tezkor yopish uchun qaysi klaviatura tugmalari bosiladi?",
+            "options": [
+                  "Alt + F4",
+                  "Ctrl + F4",
+                  "Shift + Esc",
+                  "Win + Q"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_10",
+            "subject": "2. Operatsion tizim va Windows",
+            "text": "Windows operatsion tizimida kompyuter ekranini vaqtincha bloklash (qulflash) uchun qaysi tugmalar birikmasidan foydalaniladi?",
+            "options": [
+                  "Win + L",
+                  "Win + B",
+                  "Ctrl + L",
+                  "Alt + Lock"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_11",
+            "subject": "3. Axborot birliklari va Hot keys",
+            "text": "Standart ikkilik hisobda 3 Gigabayt (GB) axborot hajmi necha Megabaytga (MB) teng?",
+            "options": [
+                  "3072 MB",
+                  "3000 MB",
+                  "2048 MB",
+                  "3120 MB"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_12",
+            "subject": "3. Axborot birliklari va Hot keys",
+            "text": "Quyidagi fayl kengaytmalaridan qaysi qatorda faqat grafik (tasvir) fayl turlari berilgan?",
+            "options": [
+                  ".png, .jpg, .svg, .webp",
+                  ".mp3, .wav, .ogg, .flac",
+                  ".docx, .xlsx, .pptx, .txt",
+                  ".exe, .bat, .msi, .dll"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_13",
+            "subject": "3. Axborot birliklari va Hot keys",
+            "text": "Windows operatsion tizimida yangi yig‘ma jild (papka) yaratish uchun qaysi tezkor tugmalar (Hot keys) birikmasi bosiladi?",
+            "options": [
+                  "Ctrl + Shift + N",
+                  "Ctrl + Alt + F",
+                  "Shift + F5",
+                  "Alt + N"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_14",
+            "subject": "3. Axborot birliklari va Hot keys",
+            "text": "Belgilangan fayl yoki yig‘ma jildni Savatchaga (Recycle Bin) tushirmasdan, butunlay o‘chirib yuborish uchun qaysi tugmalar birikmasi ishlatiladi?",
+            "options": [
+                  "Shift + Delete",
+                  "Ctrl + Delete",
+                  "Alt + Backspace",
+                  "Win + Delete"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_15",
+            "subject": "3. Axborot birliklari va Hot keys",
+            "text": "Windows muhitida tanlangan fayl yoki papka nomini o‘zgartirish (Rename) uchun klaviaturadagi qaysi funksional tugma bosiladi?",
+            "options": [
+                  "F2",
+                  "F5",
+                  "F1",
+                  "F12"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_16",
+            "subject": "4. Asosiy va qo'shimcha qurilmalar",
+            "text": "Quyidagi qurilmalardan qaysi biri kompyuterga axborot kiritish (Input) qurilmalari guruhiga kiradi?",
+            "options": [
+                  "Klaviatura, sichqoncha, skaner va mikrofon",
+                  "Monitor, printer, proyektor va kolonkalar",
+                  "Protsessor, operativ xotira va quvvat bloki",
+                  "Plotter, quloqchin va ovoz kuchaytirgich"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_17",
+            "subject": "4. Asosiy va qo'shimcha qurilmalar",
+            "text": "Kompyuterning barcha asosiy qismlarini (CPU, RAM, SSD, videokarta) yagona tizimga birlashtiruvchi asosiy plata nima deb ataladi?",
+            "options": [
+                  "Ona plata (Motherboard)",
+                  "Tarmoq kartasi (NIC)",
+                  "Quvvat bloki (PSU)",
+                  "Ovoz kartasi (Sound card)"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_18",
+            "subject": "4. Asosiy va qo'shimcha qurilmalar",
+            "text": "An’anaviy qattiq disk (HDD) bilan solishtirganda SSD (Solid State Drive) xotira qurilmasining asosiy ustunligi nimada?",
+            "options": [
+                  "Harakatlanuvchi mexanik qismlari yo‘q va ma’lumotni bir necha barobar tez o‘qiydi/yozadi",
+                  "Magnitli aylanuvchi disklardan tashkil topgan",
+                  "Faqat elektr o‘chguncha ma’lumot saqlaydi",
+                  "Faqat CD va DVD disklarni o‘qish uchun xizmat qiladi"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_19",
+            "subject": "4. Asosiy va qo'shimcha qurilmalar",
+            "text": "Qog‘ozdagi matn yoki tasvirni optik usulda o‘qib, kompyuter xotirasiga raqamli fayl sifatida kirituvchi qo‘shimcha qurilma qaysi?",
+            "options": [
+                  "Skaner (Scanner)",
+                  "Lazerli printer",
+                  "Plotter",
+                  "Veb-kamera"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_20",
+            "subject": "4. Asosiy va qo'shimcha qurilmalar",
+            "text": "Katta formatdagi chizmalar, xaritalar va bannerlarni yuqori aniqlikda qog‘ozga chop etuvchi maxsus qurilma nima deb ataladi?",
+            "options": [
+                  "Plotter",
+                  "Skaner",
+                  "Modem",
+                  "Strimer"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_21",
+            "subject": "5. Internet, brauzer va Email",
+            "text": "Quyidagi qatorlardan qaysi birida faqat veb-brauzer dasturlari ko‘rsatilgan?",
+            "options": [
+                  "Google Chrome, Mozilla Firefox, Safari, Microsoft Edge",
+                  "Google, Yandex, Bing, DuckDuckGo",
+                  "Telegram, WhatsApp, Zoom, Skype",
+                  "Windows, Android, iOS, Linux"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_22",
+            "subject": "5. Internet, brauzer va Email",
+            "text": "Brauzerda ko‘rilgan sahifalar tarixi va cookie-fayllarni kompyuterda saqlamasdan ishlash rejimi qanday nomlanadi?",
+            "options": [
+                  "Inkognito (Maxfiy / InPrivate) rejim",
+                  "To‘liq ekran (Fullscreen) rejimi",
+                  "Avtonom (Offline) rejim",
+                  "Xavfsiz yuklash (Safe Mode) rejimi"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_23",
+            "subject": "5. Internet, brauzer va Email",
+            "text": "Elektron pochta (Email) orqali xat yuborishda 'BCC' (Blind Carbon Copy) maydonining vazifasi nima?",
+            "options": [
+                  "Xat nusxasini oluvchilar manzilini boshqa qabul qiluvchilardan yashirin tarzda yuborish",
+                  "Xatga katta hajmdagi video fayllarni biriktirish",
+                  "Xatni avtomatik tarzda chet tiliga tarjima qilish",
+                  "Spam xatlarni bloklash"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_24",
+            "subject": "5. Internet, brauzer va Email",
+            "text": "Quyidagilardan qaysi biri standart qoidalarga ko‘ra to‘g‘ri yozilgan elektron pochta manzili hisoblanadi?",
+            "options": [
+                  "info_markaz@edu.uz",
+                  "www.info_markaz.edu.uz",
+                  "info@markaz@edu.uz",
+                  "http://info_markaz.uz"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_25",
+            "subject": "5. Internet, brauzer va Email",
+            "text": "Veb-brauzerda ochiq turgan sahifani qayta yuklash (yangilash / Refresh) uchun klaviaturadagi qaysi tezkor tugma bosiladi?",
+            "options": [
+                  "F5 (yoki Ctrl + R)",
+                  "F1 (yoki Ctrl + H)",
+                  "F11 (yoki Alt + Enter)",
+                  "Esc (yoki Ctrl + W)"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_26",
+            "subject": "6. Kompyuter xavfsizligi va Antivirus",
+            "text": "Foydalanuvchining login, parol yoki bank karta ma’lumotlarini rasmiy saytga o‘xshash soxta havolalar orqali aldab qo‘lga kiritish usuli nima deb ataladi?",
+            "options": [
+                  "Fishing (Phishing)",
+                  "Defragmentatsiya",
+                  "Kompilyatsiya",
+                  "Arxivlash"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_27",
+            "subject": "6. Kompyuter xavfsizligi va Antivirus",
+            "text": "Foydalanuvchi kompyuteriga foydali dastur niqobi ostida kirib olib, yashirincha ma’lumotlarni o‘g‘irlovchi zararli dastur turi qanday nomlanadi?",
+            "options": [
+                  "Troyan dasturi (Trojan Horse)",
+                  "Drayver (Driver)",
+                  "Utilita (Utility)",
+                  "Plagin (Plugin)"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_28",
+            "subject": "6. Kompyuter xavfsizligi va Antivirus",
+            "text": "Kompyuterdagi muhim fayllarni shifrlab bloklab qo‘yib, ularni ochish uchun pul talab qiluvchi zararli dastur turi qaysi?",
+            "options": [
+                  "Ransomware (Tovlamachi dastur)",
+                  "Adware (Reklama dasturi)",
+                  "BIOS yangilovchi",
+                  "Firewall"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_29",
+            "subject": "6. Kompyuter xavfsizligi va Antivirus",
+            "text": "Kiberxavfsizlik qoidalariga ko‘ra quyidagi parollardan qaysi biri eng ishonchli va buzish qiyin hisoblanadi?",
+            "options": [
+                  "Tr9$mK2#vL8!pQ",
+                  "1234567890",
+                  "sardor2005",
+                  "qwertyuiop"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_30",
+            "subject": "6. Kompyuter xavfsizligi va Antivirus",
+            "text": "Kompyuter va tashqi tarmoq o‘rtasidagi trafikni nazorat qilib, ruxsatsiz kirish va hujumlarni to‘suvchi dasturiy yoki apparat himoya vositasi nima?",
+            "options": [
+                  "Brandmauer (Firewall / Tarmoqlararo ekran)",
+                  "Arxivator (WinRAR)",
+                  "Matn muharriri",
+                  "Brauzer kesh xotirasi"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_31",
+            "subject": "7. Klaviaturada tez yozish",
+            "text": "Klaviaturaga qaramasdan o‘n barmoq usulida yozishda ko‘rsatkich barmoqlarni boshlang‘ich qatorga to‘g‘ri joylashtirish uchun qaysi tugmalar ustida maxsus bo‘rtiq chiziqcha bo‘ladi?",
+            "options": [
+                  "F va J tugmalarida",
+                  "A va L tugmalarida",
+                  "G va H tugmalarida",
+                  "Q va P tugmalarida"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_32",
+            "subject": "7. Klaviaturada tez yozish",
+            "text": "Klaviaturada matn terish tezligini o‘lchashda qo‘llaniladigan 'WPM' birligining ma’nosi nima?",
+            "options": [
+                  "Words Per Minute (Daqiqasiga yozilgan so‘zlar soni)",
+                  "Windows Process Manager",
+                  "Web Page Mode",
+                  "Wide Print Margin"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_33",
+            "subject": "7. Klaviaturada tez yozish",
+            "text": "O‘n barmoq usulida yozishda 'Probel' (Space / Bo‘sh joy) tugmasini qaysi barmoq bilan bosish qoidaga muvofiq hisoblanadi?",
+            "options": [
+                  "Ikki qo‘lning bosh barmoqlari bilan",
+                  "O‘ng qo‘lning ko‘rsatkich barmog‘i bilan",
+                  "Chap qo‘lning jimjiloq barmog‘i bilan",
+                  "O‘rta barmoqlar bilan"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_34",
+            "subject": "7. Klaviaturada tez yozish",
+            "text": "Matn yozayotganda kursorning chap tomonidagi (orqasidagi) belgini o‘chirish uchun qaysi tugma, o‘ng tomonidagi belgini o‘chirish uchun esa qaysi tugma bosiladi?",
+            "options": [
+                  "Chapdagini — Backspace, o‘ngdagini — Delete",
+                  "Chapdagini — Delete, o‘ngdagini — Backspace",
+                  "Ikkalasini ham — Escape",
+                  "Chapdagini — Shift, o‘ngdagini — Tab"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_35",
+            "subject": "7. Klaviaturada tez yozish",
+            "text": "Matnning barcha harflarini faqat bosh (katta) harflarda yozish rejimini yoqish va o‘chirish uchun qaysi tugma ishlatiladi?",
+            "options": [
+                  "Caps Lock",
+                  "Num Lock",
+                  "Scroll Lock",
+                  "Tab"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_36",
+            "subject": "8. Raqamli savodxonlik va madaniyat",
+            "text": "Insonning internet tarmog‘ida qoldirgan barcha izlari (ijtimoiy tarmoqdagi postlar, izohlar, yuklangan rasmlar, kirilgan saytlar) majmuasi nima deb ataladi?",
+            "options": [
+                  "Raqamli iz (Digital footprint)",
+                  "Raqamli imzo",
+                  "Kesh xotira",
+                  "Domen tarixi"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_37",
+            "subject": "8. Raqamli savodxonlik va madaniyat",
+            "text": "Internet tarmog‘ida va ijtimoiy platformalarda o‘zaro hurmat, madaniyatli muloqot va axloq qoidalariga rioya qilish tushunchasi qanday nomlanadi?",
+            "options": [
+                  "Netiket (Tarmoq odobi / Netiquette)",
+                  "Kiberbulling",
+                  "Kriptografiya",
+                  " Xosting"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_38",
+            "subject": "8. Raqamli savodxonlik va madaniyat",
+            "text": "Internetda tarqalgan xabar yoki ma’lumotning haqiqiyligini rasmiy va birlamchi manbalar asosida tekshirish jarayoni nima deb ataladi?",
+            "options": [
+                  "Faktcheking (Fact-checking)",
+                  "Spam tarqatish",
+                  "Fishing",
+                  "Arxivlash"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_39",
+            "subject": "8. Raqamli savodxonlik va madaniyat",
+            "text": "Shaxsiy akkauntni himoyalashda paroldan tashqari telefonga keluvchi bir martalik maxfiy kod (SMS yoki ilova kodi) yordamida kirishni tasdiqlash nima deb ataladi?",
+            "options": [
+                  "Ikki bosqichli autentifikatsiya (2FA)",
+                  "Inkognito rejim",
+                  "Avtomatik to‘ldirish",
+                  "DNS keshlash"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_40",
+            "subject": "8. Raqamli savodxonlik va madaniyat",
+            "text": "Internet tarmog‘i orqali boshqa insonni haqoratlash, kamsitish, ta’qib qilish yoki ruhiy bosim o‘tkazish holati qanday ataladi?",
+            "options": [
+                  "Kiberbulling (Cyberbullying)",
+                  "Netiket",
+                  "Kraudsorsing",
+                  "Raqamli transformatsiya"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_41",
+            "subject": "9. Raqamli transformatsiya",
+            "text": "Raqamli transformatsiya (Digital Transformation) tushunchasining eng to‘g‘ri ta’rifi qaysi?",
+            "options": [
+                  "Raqamli texnologiyalarni joriy etish orqali tashkilotning boshqaruv, biznes jarayonlari va xizmat ko‘rsatish sifatini tubdan yangilash",
+                  "Faqat ofisdagi eski stol-stullarni yangisiga almashtirish",
+                  "Qog‘oz hujjatlarni oddiy papkalarga taxlash",
+                  "Kompyuter ekranining yorqinligini oshirish"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_42",
+            "subject": "9. Raqamli transformatsiya",
+            "text": "Analog (qog‘oz, bosma, audio lenta) shakldagi ma’lumotlarni kompyuter qayta ishlay oladigan raqamli (0 va 1) ko‘rinishga o‘tkazish jarayoni nima deb ataladi?",
+            "options": [
+                  "Raqamlashtirish (Digitization)",
+                  "Shifrlash (Encryption)",
+                  "Kompressiya",
+                  "Virtualizatsiya"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_43",
+            "subject": "9. Raqamli transformatsiya",
+            "text": "O‘zbekiston Respublikasida aholi va tadbirkorlarga elektron davlat xizmatlarini onlayn ko‘rsatuvchi Yagona interaktiv davlat xizmatlari portali manzili qaysi?",
+            "options": [
+                  "my.gov.uz",
+                  "edu.uz",
+                  "ziyonet.uz",
+                  "lex.uz"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_44",
+            "subject": "9. Raqamli transformatsiya",
+            "text": "Ma’lumotlar va dasturlarni foydalanuvchining shaxsiy kompyuterida emas, balki internetdagi masofaviy serverlarda saqlash va ishlash texnologiyasi nima deb ataladi?",
+            "options": [
+                  "Bulutli texnologiyalar (Cloud computing)",
+                  "Lokal tarmoq (LAN)",
+                  "BIOS tizimi",
+                  "Offlayn arxivlash"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_45",
+            "subject": "9. Raqamli transformatsiya",
+            "text": "Maishiy texnika, datchiklar, avtomobillar va sanoat qurilmalarining internet orqali o‘zaro bog‘lanib, inson ishtirokisiz ma’lumot almashish texnologiyasi qanday ataladi?",
+            "options": [
+                  "Buyumlar interneti (IoT — Internet of Things)",
+                  "Elektron pochta protokoli",
+                  "Matn muharriri",
+                  " mahalliy shina"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_46",
+            "subject": "10. IP, Hosting, Domen, DNS, HTTPS",
+            "text": "Internet yoki lokal tarmoqqa ulangan har bir qurilmani aniqlash uchun beriladigan noyob raqamli manzil (masalan, 192.168.1.10) nima deb ataladi?",
+            "options": [
+                  "IP-manzil (Internet Protocol Address)",
+                  "MAC-kod",
+                  "HTML teg",
+                  "ZIP indeks"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_47",
+            "subject": "10. IP, Hosting, Domen, DNS, HTTPS",
+            "text": "Foydalanuvchi brauzerga kiritgan domen nomini (masalan, google.com) serverning IP-manziliga avtomatik o‘girib beruvchi xizmat qaysi?",
+            "options": [
+                  "DNS (Domain Name System)",
+                  "USB (Universal Serial Bus)",
+                  "CPU (Central Processing Unit)",
+                  "PDF (Portable Document Format)"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_48",
+            "subject": "10. IP, Hosting, Domen, DNS, HTTPS",
+            "text": "Veb-saytning barcha fayllari va ma’lumotlar bazasini internetda uzluksiz (24/7) ishlashini ta’minlab saqlovchi server xizmati nima deb ataladi?",
+            "options": [
+                  "Xosting (Hosting)",
+                  "Brauzer (Browser)",
+                  "Klaviatura",
+                  "Antivirus"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_49",
+            "subject": "10. IP, Hosting, Domen, DNS, HTTPS",
+            "text": "Veb-sayt manzilidagi HTTP va HTTPS protokollari o‘rtasidagi eng muhim farq nimada?",
+            "options": [
+                  "HTTPS protokoli uzatilayotgan ma’lumotlarni SSL/TLS sertifikati yordamida shifrlab, xavfsiz uzatadi",
+                  "HTTP protokoli HTTPS ga qaraganda xavfsizroq",
+                  "HTTPS faqat rasmlarni, HTTP esa faqat matnlarni yuklaydi",
+                  "Ularning orasida hech qanday farq yo‘q"
+            ],
+            "correctIndex": 0
+      },
+      {
+            "id": "kt_50",
+            "subject": "10. IP, Hosting, Domen, DNS, HTTPS",
+            "text": "Veb-saytning inson xotirasida eslab qolish oson bo‘lgan noyob matnli manzili (masalan, gov.uz yoki wikipedia.org) nima deb ataladi?",
+            "options": [
+                  "Domen nomi (Domain name)",
+                  "Operatsion tizim",
+                  "Provayder tarifi",
+                  "Antivirus bazasi"
+            ],
+            "correctIndex": 0
+      }
+];
+
+    const DEFAULT_SETTINGS = {
+      timeMinutes: 50,
+      questionsPerExam: 50,
+      shuffleQuestions: true,
+      shuffleOptions: true,
+      showReviewAtEnd: true,
+      strictStudentAuth: false
+    };
+
+    let questionsBank = [];
+    let submissionsList = [];
+    let registeredStudents = [];
+    let examSettings = { ...DEFAULT_SETTINGS };
+    let savedAdminPassword = '';
+
+    // Active Student Exam Session State
+    let activeExam = null;
+    let examTimerInterval = null;
+    let lastViolationTimestamp = 0;
+    let isWarningModalOpen = false;
+
+    // Chart.js instances
+    let performanceChartInstance = null;
+    let gradeChartInstance = null;
+
+    // ==================== SAFE STORAGE HELPERS ====================
+    function loadStateFromStorage() {
+      try {
+        const qRaw = localStorage.getItem(STORAGE_KEY_QUESTIONS);
+        const parsedQ = qRaw ? JSON.parse(qRaw) : null;
+        questionsBank = (parsedQ && parsedQ.length > 0) ? parsedQ : [...INITIAL_50_QUESTIONS];
+
+        const sRaw = localStorage.getItem(STORAGE_KEY_SUBMISSIONS);
+        submissionsList = sRaw ? JSON.parse(sRaw) : [];
+
+        const stRaw = localStorage.getItem(STORAGE_KEY_STUDENTS);
+        registeredStudents = stRaw ? JSON.parse(stRaw) : [];
+
+        const cfgRaw = localStorage.getItem(STORAGE_KEY_SETTINGS);
+        examSettings = cfgRaw ? { ...DEFAULT_SETTINGS, ...JSON.parse(cfgRaw) } : { ...DEFAULT_SETTINGS };
+
+        savedAdminPassword = localStorage.getItem(STORAGE_KEY_ADMIN_PASS) || '';
+      } catch (e) {
+        questionsBank = [...INITIAL_50_QUESTIONS];
+        submissionsList = [];
+        registeredStudents = [];
+        examSettings = { ...DEFAULT_SETTINGS };
+        savedAdminPassword = '';
+      }
+    }
+
+    function saveStateToStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY_QUESTIONS, JSON.stringify(questionsBank));
+        localStorage.setItem(STORAGE_KEY_SUBMISSIONS, JSON.stringify(submissionsList));
+        localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(registeredStudents));
+        localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(examSettings));
+        if (savedAdminPassword) {
+          localStorage.setItem(STORAGE_KEY_ADMIN_PASS, savedAdminPassword);
+        }
+      } catch (e) {
+        // Ignore storage errors in restricted environments
+      }
+    }
+
+    // ==================== FISHER-YATES SHUFFLE ====================
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = copy[i];
+        copy[i] = copy[j];
+        copy[j] = temp;
+      }
+      return copy;
+    }
+
+    function formatSecondsToMMSS(totalSec) {
+      const sec = Math.max(0, Math.floor(totalSec));
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    }
+
+    function formatDurationHuman(totalSec) {
+      const m = Math.floor(totalSec / 60);
+      const s = totalSec % 60;
+      if (m === 0) return `${s} soniya`;
+      return `${m} daq ${s} soniya`;
+    }
+
+    function showToast(msg) {
+      const container = document.getElementById('toastContainer');
+      const text = document.getElementById('toastMessage');
+      text.textContent = msg;
+      container.classList.remove('hidden');
+      setTimeout(() => {
+        container.classList.add('hidden');
+      }, 3400);
+    }
+
+    // ==================== ROUTE-BASED NAVIGATION (#/admin vs #/login) ====================
+    function handleRouteBarSubmit(event) {
+      event.preventDefault();
+      const rawInput = (document.getElementById('routePathInput').value || '').trim();
+      navigateToRoute(rawInput);
+    }
+
+    function navigateToRoute(routeStr) {
+      if (activeExam && !activeExam.isFinished) {
+        showToast("Test davom etayotgan vaqtda boshqa sahifaga o'tib bo'lmaydi!");
+        return;
+      }
+      const cleaned = routeStr.replace(/^#/, '').trim().toLowerCase();
+      if (cleaned === '/admin' || cleaned === 'admin') {
+        try { window.location.hash = '#/admin'; } catch (e) {}
+        switchPortal('admin');
+      } else {
+        try { window.location.hash = '#/login'; } catch (e) {}
+        switchPortal('student');
+      }
+    }
+
+    function syncRouteFromHash() {
+      const h = (window.location.hash || '').toLowerCase();
+      if (h.includes('admin')) {
+        switchPortal('admin');
+      } else {
+        switchPortal('student');
+      }
+    }
+
+    function switchPortal(portal) {
+      const studentPortal = document.getElementById('studentPortal');
+      const adminPortal = document.getElementById('adminPortal');
+      const routeInput = document.getElementById('routePathInput');
+
+      if (portal === 'student') {
+        studentPortal.classList.remove('hidden');
+        adminPortal.classList.add('hidden');
+        if (routeInput) routeInput.value = '/login';
+        refreshSubjectDropdowns();
+        updateExamPreviewInfo();
+      } else {
+        studentPortal.classList.add('hidden');
+        adminPortal.classList.remove('hidden');
+        if (routeInput) routeInput.value = '/admin';
+        const hintEl = document.getElementById('adminAuthHintText');
+        if (hintEl) {
+          hintEl.textContent = savedAdminPassword
+            ? "Avval o'rnatgan Admin parolingizni kiriting."
+            : "Birinchi marta kirish: Istalgan yangi parol yozing, u Admin paroli sifatida saqlanadi.";
+        }
+        refreshAdminAll();
+      }
+    }
+
+    // ==================== FULLSCREEN & NO-SCROLL HELPERS ====================
+    function enterFullScreen() {
+      const elem = document.documentElement;
+      try {
+        if (!document.fullscreenElement) {
+          if (elem.requestFullscreen) {
+            elem.requestFullscreen().catch(() => {});
+          } else if (elem.webkitRequestFullscreen) {
+            elem.webkitRequestFullscreen();
+          } else if (elem.msRequestFullscreen) {
+            elem.msRequestFullscreen();
+          }
+        }
+      } catch (e) {
+        // Fallback when iframe blocks native fullscreen
+      }
+      document.body.classList.add('overflow-hidden', 'h-screen');
+    }
+
+    function exitFullScreen() {
+      try {
+        if (document.fullscreenElement && document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        }
+      } catch (e) {}
+      document.body.classList.remove('overflow-hidden', 'h-screen');
+    }
+
+    // ==================== ANTI-CHEAT ENGINE (2 WARNINGS, 3RD AUTO-TERMINATES) ====================
+    function recordAntiCheatViolation(sourceReason) {
+      if (!activeExam || activeExam.isFinished) return;
+      const now = Date.now();
+      // Ignore duplicate events within 1.2s of exam start or previous event
+      if (now - activeExam.startTimeMs < 1500) return;
+      if (now - lastViolationTimestamp < 1200) return;
+      if (isWarningModalOpen) return;
+
+      lastViolationTimestamp = now;
+      activeExam.violations += 1;
+
+      updateViolationUI();
+
+      if (activeExam.violations >= 3) {
+        // 3rd time switching screen/window -> Immediately auto-submit & kick out
+        isWarningModalOpen = false;
+        document.getElementById('antiCheatWarningModal').classList.add('hidden');
+        submitStudentExam(`Qoidabuzarlik: 3 marotaba boshqa oynaga o'tildi (${sourceReason})`, true);
+      } else {
+        // 1st or 2nd time -> Show strict warning modal
+        isWarningModalOpen = true;
+        const badge = document.getElementById('antiCheatWarningBadge');
+        const title = document.getElementById('antiCheatWarningTitle');
+        const text = document.getElementById('antiCheatWarningText');
+
+        badge.textContent = `Ogohlantirish: ${activeExam.violations} / 2`;
+        if (activeExam.violations === 1) {
+          title.textContent = "DIQQAT! 1-marotaba boshqa oynaga o'tdingiz!";
+          text.textContent = "Siz test oynasidan chiqdingiz yoki boshqa ekranga o'tdingiz. Yana 1 marta ogohlantirish beriladi. 3-marotaba takrorlansa, testingiz avtomatik kelgan joyida yakunlanib, testdan chiqarib yuborilasiz!";
+        } else {
+          title.textContent = "OXIRGI OGOHLANTIRISH! (2 / 2)";
+          text.textContent = "Siz 2-marotaba test oynasidan chiqdingiz! Bu oxirgi imkoniyat: yana bir marta boshqa ekranga yoki oynaga o'tsangiz, testingiz shu zahoti kelgan joyida yakunlanadi va tizimdan chetlatilasiz!";
+        }
+        document.getElementById('antiCheatWarningModal').classList.remove('hidden');
+      }
+    }
+
+    function acknowledgeAntiCheatWarning() {
+      isWarningModalOpen = false;
+      document.getElementById('antiCheatWarningModal').classList.add('hidden');
+      lastViolationTimestamp = Date.now();
+      enterFullScreen();
+    }
+
+    function updateViolationUI() {
+      if (!activeExam) return;
+      const badge = document.getElementById('violationStatusBadge');
+      const countText = document.getElementById('violationCounterText');
+      countText.textContent = `${activeExam.violations} / 2`;
+
+      if (activeExam.violations === 0) {
+        badge.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold';
+      } else if (activeExam.violations === 1) {
+        badge.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold animate-pulse';
+      } else {
+        badge.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-100 border border-rose-300 text-rose-900 text-xs font-bold animate-pulse';
+      }
+    }
+
+    // Listen for tab switching, window blur, and exiting fullscreen
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && activeExam && !activeExam.isFinished) {
+        recordAntiCheatViolation("Boshqa tab yoki oynaga o'tish");
+      }
+    });
+
+    window.addEventListener('blur', () => {
+      if (activeExam && !activeExam.isFinished) {
+        recordAntiCheatViolation("Test oynasidan fokus yo'qolishi");
+      }
+    });
+
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement && activeExam && !activeExam.isFinished) {
+        recordAntiCheatViolation("Full Screen rejimidan chiqish");
+      }
+    });
+
+    // ==================== DYNAMIC SUBJECTS & LOGIN PREVIEW ====================
+    function getUniqueSubjects() {
+      const set = new Set();
+      questionsBank.forEach(q => {
+        if (q.subject && q.subject.trim()) set.add(q.subject.trim());
+      });
+      return Array.from(set);
+    }
+
+    function refreshSubjectDropdowns() {
+      const subjects = getUniqueSubjects();
+      const studentSelect = document.getElementById('studentSubjectSelect');
+      const adminFilterSelect = document.getElementById('adminFilterQuestionSubject');
+
+      const prevStudentVal = studentSelect ? studentSelect.value : 'ALL';
+      const prevAdminVal = adminFilterSelect ? adminFilterSelect.value : 'ALL';
+
+      if (studentSelect) {
+        studentSelect.innerHTML = `<option value="ALL">Barcha fanlar (${questionsBank.length} ta savol)</option>` +
+          subjects.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+        if (subjects.includes(prevStudentVal)) studentSelect.value = prevStudentVal;
+      }
+
+      if (adminFilterSelect) {
+        adminFilterSelect.innerHTML = `<option value="ALL">Barcha fanlar (${questionsBank.length})</option>` +
+          subjects.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+        if (subjects.includes(prevAdminVal)) adminFilterSelect.value = prevAdminVal;
+      }
+    }
+
+    function autoFillRegisteredStudentName() {
+      const loginVal = (document.getElementById('studentLoginInput').value || '').trim().toLowerCase();
+      if (!loginVal) return;
+      const found = registeredStudents.find(s => s.login.toLowerCase() === loginVal);
+      if (found) {
+        document.getElementById('studentNameInput').value = found.name;
+      }
+    }
+
+    function updateExamPreviewInfo() {
+      const subj = document.getElementById('studentSubjectSelect').value;
+      const pool = subj === 'ALL'
+        ? questionsBank
+        : questionsBank.filter(q => q.subject === subj);
+      const count = Math.min(pool.length, examSettings.questionsPerExam);
+      document.getElementById('previewQuestionCount').textContent = `${count} ta`;
+      document.getElementById('previewTimeLimit').textContent = `${examSettings.timeMinutes} daqiqa`;
+
+      const emptyAlert = document.getElementById('emptyBankAlertBox');
+      if (questionsBank.length === 0) {
+        emptyAlert.classList.remove('hidden');
+      } else {
+        emptyAlert.classList.add('hidden');
+      }
+    }
+
+    // ==================== START STUDENT EXAM ====================
+    function startStudentExam(event) {
+      event.preventDefault();
+      const name = document.getElementById('studentNameInput').value.trim();
+      const login = document.getElementById('studentLoginInput').value.trim();
+      const password = document.getElementById('studentPasswordInput').value.trim();
+      const subjectSelect = document.getElementById('studentSubjectSelect').value;
+
+      if (!name || !login || !password) {
+        showToast("Iltimos, ism-familiya, login va parolni to'liq kiriting!");
+        return;
+      }
+
+      // Check student credentials against registered accounts if any match or if strict mode is active
+      const matchedAccount = registeredStudents.find(s => s.login.toLowerCase() === login.toLowerCase());
+      if (matchedAccount) {
+        if (matchedAccount.password !== password) {
+          showToast("Xato! Ushbu login uchun parol noto'g'ri kiritildi.");
+          return;
+        }
+      } else if (examSettings.strictStudentAuth) {
+        showToast("Ushbu login Admin ro'yxatida topilmadi! O'qituvchiga murojaat qiling.");
+        return;
+      }
+
+      let candidateQuestions = subjectSelect === 'ALL'
+        ? [...questionsBank]
+        : questionsBank.filter(q => q.subject === subjectSelect);
+
+      if (candidateQuestions.length === 0) {
+        showToast("Savollar bazasi bo'sh! Avval /admin orqali savol qo'shing.");
+        return;
+      }
+
+      // 1. Shuffle questions order per student
+      if (examSettings.shuffleQuestions) {
+        candidateQuestions = shuffleArray(candidateQuestions);
+      }
+
+      // Slice up to configured questionsPerExam
+      const selectedQuestions = candidateQuestions.slice(0, examSettings.questionsPerExam).map((q) => {
+        // 2. Shuffle options order per question
+        const indexedOptions = q.options.map((optText, idx) => ({
+          text: optText,
+          isCorrect: idx === q.correctIndex
+        }));
+        const finalOptions = examSettings.shuffleOptions ? shuffleArray(indexedOptions) : indexedOptions;
+        return {
+          id: q.id,
+          subject: q.subject,
+          text: q.text,
+          options: finalOptions,
+          selectedOptionIndex: null
+        };
+      });
+
+      const totalAllowedSeconds = examSettings.timeMinutes * 60;
+
+      activeExam = {
+        studentName: matchedAccount ? matchedAccount.name : name,
+        studentLogin: login,
+        subjectLabel: subjectSelect === 'ALL' ? 'Umumiy (Aralash)' : subjectSelect,
+        questions: selectedQuestions,
+        currentIndex: 0,
+        startTimeMs: Date.now(),
+        remainingSeconds: totalAllowedSeconds,
+        totalAllowedSeconds: totalAllowedSeconds,
+        violations: 0,
+        isFinished: false
+      };
+
+      lastViolationTimestamp = Date.now();
+      isWarningModalOpen = false;
+
+      // Update UI Header
+      const initials = activeExam.studentName.split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2) || 'ST';
+      document.getElementById('activeStudentInitials').textContent = initials;
+      document.getElementById('activeStudentName').textContent = activeExam.studentName;
+      document.getElementById('activeStudentLogin').textContent = activeExam.studentLogin;
+      document.getElementById('activeExamSubjectLabel').textContent = `${activeExam.subjectLabel} • Random tartib`;
+
+      // Hide top header & lock screen without scroll
+      document.getElementById('mainAppHeader').classList.add('hidden');
+      document.getElementById('studentLoginView').classList.add('hidden');
+      document.getElementById('studentResultView').classList.add('hidden');
+      document.getElementById('studentExamView').classList.remove('hidden');
+
+      updateViolationUI();
+      renderActiveQuestion();
+      startExamCountdown();
+      enterFullScreen();
+    }
+
+    function startExamCountdown() {
+      if (examTimerInterval) {
+        clearInterval(examTimerInterval);
+      }
+      updateTimerUI();
+      examTimerInterval = setInterval(() => {
+        if (!activeExam || activeExam.isFinished) {
+          clearInterval(examTimerInterval);
+          return;
+        }
+        activeExam.remainingSeconds -= 1;
+        updateTimerUI();
+        if (activeExam.remainingSeconds <= 0) {
+          clearInterval(examTimerInterval);
+          submitStudentExam("Belgilangan vaqt tugadi", false);
+        }
+      }, 1000);
+    }
+
+    function updateTimerUI() {
+      if (!activeExam) return;
+      const disp = document.getElementById('examTimerDisplay');
+      const badge = document.getElementById('timerBadge');
+      disp.textContent = formatSecondsToMMSS(activeExam.remainingSeconds);
+
+      if (activeExam.remainingSeconds <= 60) {
+        badge.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-600 text-white font-mono text-xs sm:text-sm font-semibold animate-pulse';
+      } else {
+        badge.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 text-white font-mono text-xs sm:text-sm font-semibold';
+      }
+    }
+
+    function renderActiveQuestion() {
+      if (!activeExam) return;
+      const qIndex = activeExam.currentIndex;
+      const currentQ = activeExam.questions[qIndex];
+      const totalQ = activeExam.questions.length;
+      const answeredCount = activeExam.questions.filter(q => q.selectedOptionIndex !== null).length;
+
+      document.getElementById('answeredCountText').textContent = answeredCount;
+      document.getElementById('totalCountText').textContent = totalQ;
+      document.getElementById('currentQuestionNumberBadge').textContent = `${qIndex + 1}-savol / ${totalQ}`;
+      document.getElementById('currentQuestionSubjectBadge').textContent = currentQ.subject;
+      document.getElementById('currentQuestionText').textContent = currentQ.text;
+
+      // Render Options — Strictly BLIND mode (never shows right/wrong during test)
+      const letters = ['A', 'B', 'C', 'D'];
+      const optionsContainer = document.getElementById('optionsContainer');
+      optionsContainer.innerHTML = '';
+
+      currentQ.options.forEach((opt, idx) => {
+        const isSelected = currentQ.selectedOptionIndex === idx;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.onclick = () => selectOptionForCurrentQuestion(idx);
+        btn.className = isSelected
+          ? 'option-card w-full text-left p-3 sm:p-3.5 rounded-xl border-2 border-indigo-600 bg-indigo-50/90 flex items-center gap-3 shadow-2xs'
+          : 'option-card w-full text-left p-3 sm:p-3.5 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-slate-50 flex items-center gap-3';
+
+        btn.innerHTML = `
+          <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg font-bold text-xs sm:text-sm flex items-center justify-center shrink-0 ${
+            isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700 border border-slate-200'
+          }">${letters[idx] || idx + 1}</span>
+          <span class="text-xs sm:text-sm md:text-base font-medium ${isSelected ? 'text-indigo-950 font-semibold' : 'text-slate-800'} flex-1 line-clamp-2">${escapeHtml(opt.text)}</span>
+          ${
+            isSelected
+              ? '<span class="text-[11px] font-semibold text-indigo-600 bg-white px-2 py-0.5 rounded border border-indigo-200 shrink-0">Belgilandi</span>'
+              : ''
+          }
+        `;
+        optionsContainer.appendChild(btn);
+      });
+
+      document.getElementById('prevQuestionBtn').disabled = qIndex === 0;
+      const nextBtn = document.getElementById('nextQuestionBtn');
+      if (qIndex === totalQ - 1) {
+        nextBtn.innerHTML = `<span>Yakunlash</span>`;
+        nextBtn.onclick = () => openFinishConfirmModal();
+      } else {
+        nextBtn.innerHTML = `<span>Keyingi savol</span><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>`;
+        nextBtn.onclick = () => navigateQuestion(1);
+      }
+
+      renderQuestionPalette();
+    }
+
+    function selectOptionForCurrentQuestion(optionIdx) {
+      if (!activeExam || activeExam.isFinished) return;
+      activeExam.questions[activeExam.currentIndex].selectedOptionIndex = optionIdx;
+      renderActiveQuestion();
+    }
+
+    function clearCurrentAnswer() {
+      if (!activeExam || activeExam.isFinished) return;
+      activeExam.questions[activeExam.currentIndex].selectedOptionIndex = null;
+      renderActiveQuestion();
+    }
+
+    function navigateQuestion(delta) {
+      if (!activeExam) return;
+      const nextIdx = activeExam.currentIndex + delta;
+      if (nextIdx >= 0 && nextIdx < activeExam.questions.length) {
+        activeExam.currentIndex = nextIdx;
+        renderActiveQuestion();
+      }
+    }
+
+    function jumpToQuestion(index) {
+      if (!activeExam) return;
+      activeExam.currentIndex = index;
+      renderActiveQuestion();
+    }
+
+    function renderQuestionPalette() {
+      const grid = document.getElementById('questionPaletteGrid');
+      grid.innerHTML = '';
+      activeExam.questions.forEach((q, idx) => {
+        const isCurrent = idx === activeExam.currentIndex;
+        const isAnswered = q.selectedOptionIndex !== null;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.onclick = () => jumpToQuestion(idx);
+
+        let cls = 'h-7 rounded-lg font-mono text-[11px] font-bold transition flex items-center justify-center ';
+        if (isCurrent && isAnswered) {
+          cls += 'bg-indigo-700 text-white ring-2 ring-offset-1 ring-indigo-600';
+        } else if (isCurrent) {
+          cls += 'bg-indigo-50 text-indigo-700 border-2 border-indigo-600';
+        } else if (isAnswered) {
+          cls += 'bg-indigo-600 text-white hover:bg-indigo-700';
+        } else {
+          cls += 'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200';
+        }
+        btn.className = cls;
+        btn.textContent = idx + 1;
+        grid.appendChild(btn);
+      });
+    }
+
+    function openFinishConfirmModal() {
+      if (!activeExam) return;
+      const total = activeExam.questions.length;
+      const answered = activeExam.questions.filter(q => q.selectedOptionIndex !== null).length;
+      const unanswered = total - answered;
+      const msgEl = document.getElementById('finishModalSummaryText');
+      if (unanswered > 0) {
+        msgEl.textContent = `Diqqat! Siz ${total} ta savoldan ${answered} tasini belgiladingiz (${unanswered} ta savol bo'sh qoldi). Testni hozir yakunlashni xohlaysizmi?`;
+      } else {
+        msgEl.textContent = `Siz barcha ${total} ta savolga javob belgiladingiz. Testni yakunlab, natijani ko'rishni tasdiqlaysizmi?`;
+      }
+      document.getElementById('finishConfirmModal').classList.remove('hidden');
+    }
+
+    function closeFinishConfirmModal() {
+      document.getElementById('finishConfirmModal').classList.add('hidden');
+    }
+
+    // ==================== SUBMIT EXAM (NORMAL OR FORCED BY ANTI-CHEAT) ====================
+    function submitStudentExam(reason, terminatedByAntiCheat) {
+      closeFinishConfirmModal();
+      document.getElementById('antiCheatWarningModal').classList.add('hidden');
+      isWarningModalOpen = false;
+
+      if (!activeExam || activeExam.isFinished) return;
+      activeExam.isFinished = true;
+      if (examTimerInterval) {
+        clearInterval(examTimerInterval);
+      }
+
+      exitFullScreen();
+      document.getElementById('mainAppHeader').classList.remove('hidden');
+
+      const elapsedSeconds = Math.max(1, Math.round((Date.now() - activeExam.startTimeMs) / 1000));
+      const totalQuestions = activeExam.questions.length;
+      let answeredQuestions = 0;
+      let correctCount = 0;
+
+      const detailedRecords = activeExam.questions.map((q) => {
+        const chosenOpt = q.selectedOptionIndex !== null ? q.options[q.selectedOptionIndex] : null;
+        const correctOpt = q.options.find(o => o.isCorrect);
+        if (chosenOpt) answeredQuestions += 1;
+        const isCorrect = Boolean(chosenOpt && chosenOpt.isCorrect);
+        if (isCorrect) correctCount += 1;
+        return {
+          qText: q.text,
+          subject: q.subject,
+          chosen: chosenOpt ? chosenOpt.text : 'Belgilanmagan',
+          correct: correctOpt ? correctOpt.text : '',
+          isCorrect: isCorrect
+        };
+      });
+
+      const percentage = Math.round((correctCount / totalQuestions) * 100);
+      const nowStr = new Date().toLocaleString('uz-UZ', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      const submissionRecord = {
+        id: 'sub_' + Date.now(),
+        studentName: activeExam.studentName,
+        studentLogin: activeExam.studentLogin,
+        subject: activeExam.subjectLabel,
+        totalQuestions,
+        answeredQuestions,
+        correctCount,
+        percentage,
+        durationSeconds: elapsedSeconds,
+        violations: activeExam.violations,
+        terminatedByAntiCheat: Boolean(terminatedByAntiCheat),
+        terminationReason: reason || 'Yakunlandi',
+        submittedAt: nowStr,
+        details: detailedRecords
+      };
+
+      submissionsList.unshift(submissionRecord);
+      saveStateToStorage();
+
+      renderStudentResultScreen(submissionRecord);
+      if (terminatedByAntiCheat) {
+        showToast("3 marta boshqa oynaga o'tganingiz uchun test avtomatik yakunlandi!");
+      } else {
+        showToast("Test muvaffaqiyatli yakunlandi!");
+      }
+    }
+
+    function renderStudentResultScreen(sub) {
+      document.getElementById('studentExamView').classList.add('hidden');
+      document.getElementById('studentResultView').classList.remove('hidden');
+
+      const pill = document.getElementById('resultStatusPill');
+      const reasonEl = document.getElementById('resultTerminationReasonText');
+
+      if (sub.terminatedByAntiCheat) {
+        pill.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/20 text-rose-300 border border-rose-400/30 mb-2';
+        pill.textContent = "Chetlatildi (3/3 Qoidabuzarlik)";
+        reasonEl.textContent = `Sabab: ${sub.terminationReason}. Kelgan joyigacha belgilangan javoblar hisoblandi.`;
+      } else {
+        pill.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 mb-2';
+        pill.textContent = "Test muvaffaqiyatli yakunlandi";
+        reasonEl.textContent = '';
+      }
+
+      document.getElementById('resultStudentName').textContent = sub.studentName;
+      document.getElementById('resultStudentLogin').textContent = sub.studentLogin;
+      document.getElementById('resultTimestamp').textContent = sub.submittedAt;
+      document.getElementById('resultPercentageBadge').textContent = `${sub.percentage}%`;
+
+      let gradeText = 'Qoniqarli';
+      if (sub.percentage >= 86) gradeText = "A'lo (5 baho)";
+      else if (sub.percentage >= 71) gradeText = 'Yaxshi (4 baho)';
+      else if (sub.percentage >= 55) gradeText = 'Qoniqarli (3 baho)';
+      else gradeText = 'Qoniqarsiz';
+      document.getElementById('resultGradeLabel').textContent = gradeText;
+
+      document.getElementById('resultCorrectCount').textContent = `${sub.correctCount} / ${sub.totalQuestions}`;
+      document.getElementById('resultWrongCount').textContent = `${sub.totalQuestions - sub.correctCount} ta`;
+      document.getElementById('resultDurationText').textContent = formatDurationHuman(sub.durationSeconds);
+      document.getElementById('resultAvgTimeText').textContent = `${sub.violations || 0} / 3`;
+
+      const reviewContainer = document.getElementById('resultReviewList');
+      reviewContainer.innerHTML = '';
+
+      if (!examSettings.showReviewAtEnd) {
+        reviewContainer.innerHTML = `
+          <div class="p-4 rounded-xl bg-slate-100 text-slate-600 text-sm">
+            Administrator sozlamalariga ko'ra savollarning to'g'ri javoblari tahlili yashirilgan. Umumiy natijangiz yuqorida ko'rsatilgan.
+          </div>
+        `;
+        return;
+      }
+
+      sub.details.forEach((item, idx) => {
+        const card = document.createElement('div');
+        card.className = `p-4 rounded-xl border ${
+          item.isCorrect ? 'bg-emerald-50/50 border-emerald-200' : 'bg-rose-50/50 border-rose-200'
+        }`;
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-3">
+            <div class="text-sm font-semibold text-slate-900">
+              <span class="font-mono text-xs px-2 py-0.5 rounded bg-white border border-slate-200 mr-1.5">#${idx + 1}</span>
+              ${escapeHtml(item.qText)}
+            </div>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold shrink-0 ${
+              item.isCorrect ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+            }">
+              ${item.isCorrect ? "To'g'ri" : 'Xato'}
+            </span>
+          </div>
+          <div class="mt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div class="p-2 rounded-lg bg-white border border-slate-200/80">
+              <span class="text-slate-500">Belgilangan javob:</span>
+              <span class="font-semibold ml-1 ${item.isCorrect ? 'text-emerald-700' : 'text-rose-700'}">${escapeHtml(item.chosen)}</span>
+            </div>
+            <div class="p-2 rounded-lg bg-white border border-slate-200/80">
+              <span class="text-slate-500">To'g'ri javob:</span>
+              <span class="font-semibold text-emerald-700 ml-1">${escapeHtml(item.correct)}</span>
+            </div>
+          </div>
+        `;
+        reviewContainer.appendChild(card);
+      });
+    }
+
+    function resetToStudentLogin() {
+      activeExam = null;
+      exitFullScreen();
+      document.getElementById('mainAppHeader').classList.remove('hidden');
+      document.getElementById('studentNameInput').value = '';
+      document.getElementById('studentLoginInput').value = '';
+      document.getElementById('studentPasswordInput').value = '';
+      document.getElementById('studentResultView').classList.add('hidden');
+      document.getElementById('studentExamView').classList.add('hidden');
+      document.getElementById('studentLoginView').classList.remove('hidden');
+      updateExamPreviewInfo();
+    }
+
+    // ==================== ADMIN PORTAL LOGIC ====================
+    let isAdminAuthenticated = false;
+
+    function handleAdminLogin(event) {
+      event.preventDefault();
+      const pass = document.getElementById('adminPassInput').value.trim();
+      if (!pass) return;
+
+      if (!savedAdminPassword) {
+        savedAdminPassword = pass;
+        saveStateToStorage();
+        isAdminAuthenticated = true;
+      } else if (pass === savedAdminPassword) {
+        isAdminAuthenticated = true;
+      } else {
+        showToast("Admin paroli noto'g'ri!");
+        return;
+      }
+
+      document.getElementById('adminAuthGate').classList.add('hidden');
+      document.getElementById('adminDashboardContent').classList.remove('hidden');
+      refreshAdminAll();
+      showToast('Admin boshqaruv paneliga kirdingiz!');
+    }
+
+    function switchAdminTab(tab) {
+      const resultsSec = document.getElementById('adminResultsSection');
+      const questionsSec = document.getElementById('adminQuestionsSection');
+      const studentsSec = document.getElementById('adminStudentsSection');
+      const settingsSec = document.getElementById('adminSettingsSection');
+
+      const btnRes = document.getElementById('adminTabResults');
+      const btnQue = document.getElementById('adminTabQuestions');
+      const btnStu = document.getElementById('adminTabStudents');
+      const btnSet = document.getElementById('adminTabSettings');
+
+      resultsSec.classList.add('hidden');
+      questionsSec.classList.add('hidden');
+      studentsSec.classList.add('hidden');
+      settingsSec.classList.add('hidden');
+
+      const inactiveCls = 'px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition';
+      const activeCls = 'px-4 py-2 rounded-xl text-sm font-semibold bg-indigo-600 text-white transition';
+
+      btnRes.className = inactiveCls;
+      btnQue.className = inactiveCls;
+      btnStu.className = inactiveCls;
+      btnSet.className = inactiveCls;
+
+      if (tab === 'results') {
+        resultsSec.classList.remove('hidden');
+        btnRes.className = activeCls;
+        refreshAdminAll();
+      } else if (tab === 'questions') {
+        questionsSec.classList.remove('hidden');
+        btnQue.className = activeCls;
+        renderAdminQuestionsList();
+      } else if (tab === 'students') {
+        studentsSec.classList.remove('hidden');
+        btnStu.className = activeCls;
+        renderAdminStudentAccounts();
+      } else {
+        settingsSec.classList.remove('hidden');
+        btnSet.className = activeCls;
+        populateSettingsForm();
+      }
+    }
+
+    function refreshAdminAll() {
+      document.getElementById('adminTotalQuestionsBadge').textContent = questionsBank.length;
+      document.getElementById('adminTotalSubmissionsBadge').textContent = submissionsList.length;
+      document.getElementById('adminTotalStudentsBadge').textContent = registeredStudents.length;
+      refreshSubjectDropdowns();
+      if (!isAdminAuthenticated) return;
+      renderAdminKPIs();
+      renderAdminSubmissionsTable();
+      renderAdminCharts();
+      renderAdminQuestionsList();
+      renderAdminStudentAccounts();
+    }
+
+    function renderAdminKPIs() {
+      const total = submissionsList.length;
+      document.getElementById('kpiTotalStudents').textContent = `${total} nafar`;
+
+      if (total === 0) {
+        document.getElementById('kpiAvgScore').textContent = '0%';
+        document.getElementById('kpiAvgDuration').textContent = '00:00';
+        document.getElementById('kpiTopStudent').textContent = '--';
+        document.getElementById('kpiTopScoreSub').textContent = 'Hali test topshirilmagan';
+        return;
+      }
+
+      const avgPct = Math.round(submissionsList.reduce((acc, s) => acc + s.percentage, 0) / total);
+      const avgSec = Math.round(submissionsList.reduce((acc, s) => acc + s.durationSeconds, 0) / total);
+
+      const sortedByScore = [...submissionsList].sort((a, b) => {
+        if (b.percentage !== a.percentage) return b.percentage - a.percentage;
+        return a.durationSeconds - b.durationSeconds;
+      });
+      const top = sortedByScore[0];
+
+      document.getElementById('kpiAvgScore').textContent = `${avgPct}%`;
+      document.getElementById('kpiAvgDuration').textContent = formatDurationHuman(avgSec);
+      document.getElementById('kpiTopStudent').textContent = `${top.studentName} (${top.studentLogin})`;
+      document.getElementById('kpiTopScoreSub').textContent = `${top.percentage}% (${top.correctCount}/${top.totalQuestions}) • ${formatDurationHuman(top.durationSeconds)}`;
+    }
+
+    function renderAdminSubmissionsTable() {
+      const tbody = document.getElementById('adminSubmissionsTableBody');
+      const query = (document.getElementById('adminSearchInput').value || '').toLowerCase().trim();
+      const sortBy = document.getElementById('adminSortSelect').value;
+
+      let filtered = submissionsList.filter(s =>
+        s.studentName.toLowerCase().includes(query) ||
+        s.studentLogin.toLowerCase().includes(query) ||
+        s.subject.toLowerCase().includes(query)
+      );
+
+      if (sortBy === 'score_desc') {
+        filtered.sort((a, b) => b.percentage - a.percentage);
+      } else if (sortBy === 'duration_asc') {
+        filtered.sort((a, b) => a.durationSeconds - b.durationSeconds);
+      } else if (sortBy === 'duration_desc') {
+        filtered.sort((a, b) => b.durationSeconds - a.durationSeconds);
+      }
+
+      tbody.innerHTML = '';
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" class="py-10 text-center text-slate-400 text-sm">
+              Hozircha hech qanday o'quvchi test topshirmagan. O'quvchilar test ishlagach natijalar shu yerda dinamik paydo bo'ladi.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      filtered.forEach((sub, idx) => {
+        let badgeCls = 'bg-emerald-100 text-emerald-800';
+        if (sub.percentage < 55) badgeCls = 'bg-rose-100 text-rose-800';
+        else if (sub.percentage < 75) badgeCls = 'bg-amber-100 text-amber-800';
+
+        const vCount = sub.violations || 0;
+        let statusHtml = `<span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Toza (${vCount}/2)</span>`;
+        if (sub.terminatedByAntiCheat) {
+          statusHtml = `<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300">Chetlatildi (3/3)</span>`;
+        } else if (vCount > 0) {
+          statusHtml = `<span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">Ogohlantirildi (${vCount}/2)</span>`;
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50/90 transition';
+        tr.innerHTML = `
+          <td class="py-3.5 px-4 font-mono text-xs text-slate-400">${idx + 1}</td>
+          <td class="py-3.5 px-4">
+            <div class="font-bold text-slate-900">${escapeHtml(sub.studentName)}</div>
+            <div class="text-xs font-mono text-indigo-600">Login: ${escapeHtml(sub.studentLogin)}</div>
+          </td>
+          <td class="py-3.5 px-4 text-xs font-medium text-slate-600">${escapeHtml(sub.subject)}</td>
+          <td class="py-3.5 px-4 font-mono text-xs text-slate-700">${sub.answeredQuestions} / ${sub.totalQuestions} ta</td>
+          <td class="py-3.5 px-4">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-slate-900">${sub.correctCount} ta</span>
+              <span class="px-2 py-0.5 rounded-full text-xs font-bold ${badgeCls}">${sub.percentage}%</span>
+            </div>
+          </td>
+          <td class="py-3.5 px-4">
+            <span class="inline-flex items-center gap-1 font-mono text-xs font-semibold text-slate-800 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
+              ⏱ ${formatDurationHuman(sub.durationSeconds)}
+            </span>
+          </td>
+          <td class="py-3.5 px-4">${statusHtml}</td>
+          <td class="py-3.5 px-4 text-xs text-slate-500">${escapeHtml(sub.submittedAt)}</td>
+          <td class="py-3.5 px-4 text-right">
+            <div class="inline-flex items-center gap-1.5">
+              <button type="button" onclick="openStudentDetailModal('${sub.id}')" class="px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold transition">
+                Batafsil
+              </button>
+              <button type="button" onclick="deleteSubmission('${sub.id}')" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition" title="O'chirish">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openStudentDetailModal(subId) {
+      const sub = submissionsList.find(s => s.id === subId);
+      if (!sub) return;
+      document.getElementById('modalDetailStudentTitle').textContent = `${sub.studentName} (${sub.studentLogin})`;
+      document.getElementById('modalDetailStudentSub').textContent = `Natija: ${sub.correctCount}/${sub.totalQuestions} (${sub.percentage}%) • Vaqt: ${formatDurationHuman(sub.durationSeconds)} • Ogohlantirish: ${sub.violations || 0}/3 • ${sub.terminationReason || ''}`;
+
+      const body = document.getElementById('modalDetailBody');
+      body.innerHTML = '';
+
+      if (!sub.details || sub.details.length === 0) {
+        body.innerHTML = `<p class="text-sm text-slate-500">Savollar tafsiloti mavjud emas.</p>`;
+      } else {
+        sub.details.forEach((d, i) => {
+          const item = document.createElement('div');
+          item.className = `p-3.5 rounded-xl border ${d.isCorrect ? 'bg-emerald-50/60 border-emerald-200' : 'bg-rose-50/60 border-rose-200'}`;
+          item.innerHTML = `
+            <div class="flex items-start justify-between gap-2">
+              <span class="text-sm font-semibold text-slate-900">${i + 1}. ${escapeHtml(d.qText)}</span>
+              <span class="text-xs font-bold px-2 py-0.5 rounded ${d.isCorrect ? 'bg-emerald-200 text-emerald-900' : 'bg-rose-200 text-rose-900'}">
+                ${d.isCorrect ? "To'g'ri" : 'Xato'}
+              </span>
+            </div>
+            <div class="mt-2 text-xs text-slate-700 flex flex-wrap gap-4">
+              <span><strong>O'quvchi javobi:</strong> ${escapeHtml(d.chosen)}</span>
+              <span><strong>To'g'ri javob:</strong> ${escapeHtml(d.correct)}</span>
+            </div>
+          `;
+          body.appendChild(item);
+        });
+      }
+
+      document.getElementById('studentDetailModal').classList.remove('hidden');
+    }
+
+    function closeStudentDetailModal() {
+      document.getElementById('studentDetailModal').classList.add('hidden');
+    }
+
+    function deleteSubmission(subId) {
+      submissionsList = submissionsList.filter(s => s.id !== subId);
+      saveStateToStorage();
+      refreshAdminAll();
+      showToast("O'quvchi natijasi o'chirildi");
+    }
+
+    function renderAdminCharts() {
+      const ctxPerf = document.getElementById('adminPerformanceChart');
+      const ctxGrade = document.getElementById('adminGradeDistributionChart');
+      if (!ctxPerf || !ctxGrade || typeof Chart === 'undefined') return;
+
+      if (performanceChartInstance) performanceChartInstance.destroy();
+      if (gradeChartInstance) gradeChartInstance.destroy();
+
+      const recent = submissionsList.slice(0, 10).reverse();
+      const labels = recent.map(s => s.studentName.split(' ')[0] + ' (' + s.studentLogin + ')');
+      const scores = recent.map(s => s.percentage);
+      const durationsMin = recent.map(s => +(s.durationSeconds / 60).toFixed(1));
+
+      performanceChartInstance = new Chart(ctxPerf, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Natija (%)',
+              data: scores,
+              backgroundColor: '#4f46e5',
+              borderRadius: 6,
+              yAxisID: 'y'
+            },
+            {
+              label: 'Sarflangan vaqt (daqiqa)',
+              data: durationsMin,
+              backgroundColor: '#f59e0b',
+              borderRadius: 6,
+              yAxisID: 'y1'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, max: 100, title: { display: true, text: 'Foiz (%)' } },
+            y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Daqiqa' } }
+          }
+        }
+      });
+
+      const excellent = submissionsList.filter(s => s.percentage >= 86).length;
+      const good = submissionsList.filter(s => s.percentage >= 71 && s.percentage < 86).length;
+      const fair = submissionsList.filter(s => s.percentage >= 55 && s.percentage < 71).length;
+      const low = submissionsList.filter(s => s.percentage < 55).length;
+
+      gradeChartInstance = new Chart(ctxGrade, {
+        type: 'doughnut',
+        data: {
+          labels: ["A'lo (86-100%)", 'Yaxshi (71-85%)', 'Qoniqarli (55-70%)', 'Past (<55%)'],
+          datasets: [{
+            data: [excellent, good, fair, low],
+            backgroundColor: ['#10b981', '#6366f1', '#f59e0b', '#f43f5e'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+    }
+
+    // ==================== QUESTION BANK CRUD ====================
+    function renderAdminQuestionsList() {
+      const container = document.getElementById('adminQuestionsListContainer');
+      const filterSubj = document.getElementById('adminFilterQuestionSubject').value;
+      const list = filterSubj === 'ALL'
+        ? questionsBank
+        : questionsBank.filter(q => q.subject === filterSubj);
+
+      document.getElementById('adminTotalQuestionsBadge').textContent = questionsBank.length;
+      container.innerHTML = '';
+
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 rounded-xl border border-dashed border-slate-300 text-center text-slate-400 text-sm">
+            Savollar bazasi bo'sh. Chap tomondagi forma orqali yangi savollar qo'shing.
+          </div>
+        `;
+        return;
+      }
+
+      list.forEach((q, idx) => {
+        const div = document.createElement('div');
+        div.className = 'p-4 rounded-xl border border-slate-200 bg-slate-50/60 hover:bg-white transition';
+        const optsHtml = q.options.map((opt, oIdx) => `
+          <span class="px-2.5 py-1 rounded-lg text-xs ${
+            oIdx === q.correctIndex
+              ? 'bg-emerald-100 text-emerald-800 font-bold border border-emerald-300'
+              : 'bg-white text-slate-600 border border-slate-200'
+          }">
+            ${oIdx === q.correctIndex ? '✓ ' : ''}${escapeHtml(opt)}
+          </span>
+        `).join('');
+
+        div.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="text-xs font-bold uppercase px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 mr-2">${escapeHtml(q.subject)}</span>
+              <span class="text-sm font-semibold text-slate-900">${idx + 1}. ${escapeHtml(q.text)}</span>
+            </div>
+            <button type="button" onclick="deleteQuestionFromBank('${q.id}')" class="text-slate-400 hover:text-rose-600 p-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div class="flex flex-wrap gap-2 mt-3">
+            ${optsHtml}
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function handleSaveQuestion(event) {
+      event.preventDefault();
+      const subject = document.getElementById('qSubjectInput').value.trim();
+      const text = document.getElementById('qTextInput').value.trim();
+      const opt0 = document.getElementById('qOpt0').value.trim();
+      const opt1 = document.getElementById('qOpt1').value.trim();
+      const opt2 = document.getElementById('qOpt2').value.trim();
+      const opt3 = document.getElementById('qOpt3').value.trim();
+      const correctRadio = document.querySelector('input[name="correctOptionRadio"]:checked');
+      const correctIndex = correctRadio ? parseInt(correctRadio.value, 10) : 0;
+
+      if (!subject || !text || !opt0 || !opt1 || !opt2 || !opt3) {
+        showToast("Barcha maydonlarni to'ldiring!");
+        return;
+      }
+
+      questionsBank.unshift({
+        id: 'q_' + Date.now(),
+        subject,
+        text,
+        options: [opt0, opt1, opt2, opt3],
+        correctIndex
+      });
+
+      saveStateToStorage();
+      document.getElementById('qTextInput').value = '';
+      document.getElementById('qOpt0').value = '';
+      document.getElementById('qOpt1').value = '';
+      document.getElementById('qOpt2').value = '';
+      document.getElementById('qOpt3').value = '';
+      refreshSubjectDropdowns();
+      renderAdminQuestionsList();
+      updateExamPreviewInfo();
+      showToast("Yangi savol bazaga qo'shildi!");
+    }
+
+    function deleteQuestionFromBank(qId) {
+      questionsBank = questionsBank.filter(q => q.id !== qId);
+      saveStateToStorage();
+      refreshSubjectDropdowns();
+      renderAdminQuestionsList();
+      updateExamPreviewInfo();
+      showToast("Savol bazadan o'chirildi");
+    }
+
+    function clearAllQuestions() {
+      questionsBank = [];
+      saveStateToStorage();
+      refreshSubjectDropdowns();
+      renderAdminQuestionsList();
+      updateExamPreviewInfo();
+      showToast("Savollar bazasi tozalandi");
+    }
+
+    // ==================== REGISTERED STUDENT ACCOUNTS CRUD ====================
+    function handleSaveStudentAccount(event) {
+      event.preventDefault();
+      const name = document.getElementById('regStudentName').value.trim();
+      const login = document.getElementById('regStudentLogin').value.trim();
+      const password = document.getElementById('regStudentPassword').value.trim();
+
+      if (!name || !login || !password) return;
+
+      const exists = registeredStudents.some(s => s.login.toLowerCase() === login.toLowerCase());
+      if (exists) {
+        showToast("Ushbu login allaqachon mavjud!");
+        return;
+      }
+
+      registeredStudents.unshift({
+        id: 'stu_' + Date.now(),
+        name,
+        login,
+        password
+      });
+
+      saveStateToStorage();
+      document.getElementById('addStudentAccountForm').reset();
+      renderAdminStudentAccounts();
+      showToast("O'quvchi login va paroli saqlandi!");
+    }
+
+    function renderAdminStudentAccounts() {
+      const container = document.getElementById('adminStudentAccountsContainer');
+      document.getElementById('adminTotalStudentsBadge').textContent = registeredStudents.length;
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (registeredStudents.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 rounded-xl border border-dashed border-slate-300 text-center text-slate-400 text-sm">
+            Hozircha alohida o'quvchi loginlari kiritilmagan. Chapdagi forma orqali o'quvchilarga login va parol yaratishingiz mumkin.
+          </div>
+        `;
+        return;
+      }
+
+      registeredStudents.forEach((stu, i) => {
+        const row = document.createElement('div');
+        row.className = 'p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between gap-3';
+        row.innerHTML = `
+          <div>
+            <div class="font-bold text-sm text-slate-900">${i + 1}. ${escapeHtml(stu.name)}</div>
+            <div class="text-xs font-mono text-slate-600 mt-0.5">
+              Login: <strong class="text-indigo-600">${escapeHtml(stu.login)}</strong> • Parol: <strong class="text-emerald-700">${escapeHtml(stu.password)}</strong>
+            </div>
+          </div>
+          <button type="button" onclick="deleteStudentAccount('${stu.id}')" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function deleteStudentAccount(id) {
+      registeredStudents = registeredStudents.filter(s => s.id !== id);
+      saveStateToStorage();
+      renderAdminStudentAccounts();
+      showToast("O'quvchi akkaunti o'chirildi");
+    }
+
+    // ==================== SETTINGS & EXPORT ====================
+    function populateSettingsForm() {
+      document.getElementById('settingTimeMinutes').value = examSettings.timeMinutes;
+      document.getElementById('settingQuestionsPerExam').value = examSettings.questionsPerExam;
+      document.getElementById('settingShuffleQuestions').checked = examSettings.shuffleQuestions;
+      document.getElementById('settingShuffleOptions').checked = examSettings.shuffleOptions;
+      document.getElementById('settingShowReviewAtEnd').checked = examSettings.showReviewAtEnd;
+      document.getElementById('settingStrictStudentAuth').checked = Boolean(examSettings.strictStudentAuth);
+    }
+
+    function saveExamSettings() {
+      const timeMin = parseInt(document.getElementById('settingTimeMinutes').value, 10) || 15;
+      const qCount = parseInt(document.getElementById('settingQuestionsPerExam').value, 10) || 10;
+      examSettings.timeMinutes = Math.max(1, Math.min(180, timeMin));
+      examSettings.questionsPerExam = Math.max(1, Math.min(100, qCount));
+      examSettings.shuffleQuestions = document.getElementById('settingShuffleQuestions').checked;
+      examSettings.shuffleOptions = document.getElementById('settingShuffleOptions').checked;
+      examSettings.showReviewAtEnd = document.getElementById('settingShowReviewAtEnd').checked;
+      examSettings.strictStudentAuth = document.getElementById('settingStrictStudentAuth').checked;
+
+      saveStateToStorage();
+      updateExamPreviewInfo();
+      showToast('Sozlamalar saqlandi!');
+    }
+
+    function resetDemoData() {
+      questionsBank = [...INITIAL_50_QUESTIONS];
+      submissionsList = [];
+      registeredStudents = [];
+      examSettings = { ...DEFAULT_SETTINGS };
+      saveStateToStorage();
+      populateSettingsForm();
+      refreshAdminAll();
+      showToast("Barcha ma'lumotlar tozalandi!");
+    }
+
+    function exportResultsCSV() {
+      if (submissionsList.length === 0) {
+        showToast("Eksport qilish uchun hali natijalar yo'q!");
+        return;
+      }
+      const headers = ['Oquvchi Ismi', 'Login', 'Yonalish', 'Jami savollar', 'Ishlangan savollar', 'Togri javoblar', 'Foiz (%)', 'Sarflangan vaqt (soniya)', 'Sarflangan vaqt', 'Ogohlantirishlar', 'Holati', 'Sana'];
+      const rows = submissionsList.map(s => [
+        `"${s.studentName.replace(/"/g, '""')}"`,
+        `"${s.studentLogin.replace(/"/g, '""')}"`,
+        `"${s.subject.replace(/"/g, '""')}"`,
+        s.totalQuestions,
+        s.answeredQuestions,
+        s.correctCount,
+        s.percentage,
+        s.durationSeconds,
+        `"${formatDurationHuman(s.durationSeconds)}"`,
+        s.violations || 0,
+        `"${(s.terminationReason || 'Yakunlandi').replace(/"/g, '""')}"`,
+        `"${s.submittedAt}"`
+      ]);
+      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'oquvchilar_test_natijalari.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast("Natijalar CSV jadval ko'rinishida yuklab olindi!");
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    window.addEventListener('hashchange', syncRouteFromHash);
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadStateFromStorage();
+      refreshSubjectDropdowns();
+      updateExamPreviewInfo();
+      syncRouteFromHash();
+    });
+  </script>
+</body>
+</html>
